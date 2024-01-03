@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: web-container
-          image:  registry.ocp4.example.com:8443/redhattraining/podman-nginx-helloworld
+          image:  quay.io/fedora/nginx-122
           ports:
             - containerPort: 80
 
