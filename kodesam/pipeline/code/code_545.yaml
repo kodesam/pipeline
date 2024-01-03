@@ -1,7 +1,4 @@
-Certainly! Here is an example of Kubernetes YAML files to create a pod, deployment, secrets, configmap, services, and routes for a web application:
 
-1. **Pod YAML file (pod.yaml):**
-```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -14,8 +11,7 @@ spec:
         - containerPort: 80
 ```
 
-2. **Deployment YAML file (deployment.yaml):**
-```yaml
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -37,32 +33,28 @@ spec:
             - containerPort: 80
 ```
 
-3. **Secrets YAML file (secrets.yaml):**
-```yaml
 apiVersion: v1
 kind: Secret
 metadata:
   name: app-secrets
 type: Opaque
 data:
-  username: <base64-encoded-username>
-  password: <base64-encoded-password>
+  username: test
+  password: test
 ```
 
-4. **ConfigMap YAML file (configmap.yaml):**
-```yaml
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: app-config
 data:
   app.properties: |
-    key1=value1
-    key2=value2
+    key1=red
+    key2=blue
 ```
 
-5. **Services YAML file (services.yaml):**
-```yaml
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -76,15 +68,14 @@ spec:
       targetPort: 80
 ```
 
-6. **Routes YAML file (routes.yaml):**
-```yaml
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: web-ingress
 spec:
   rules:
-    - host: example.com
+    - host: bluetest.com
       http:
         paths:
           - path: /
@@ -94,9 +85,3 @@ spec:
                 name: web-service
                 port:
                   number: 80
-```
-Replace `<base64-encoded-username>` and `<base64-encoded-password>` with the actual base64-encoded values of the username and password for your secrets. Replace `example.com` with your actual domain for routing.
-
-You can apply these YAML files to your Kubernetes cluster using the `kubectl apply -f <filename>` command. Replace `<filename>` with the actual filename for each YAML file.
-
-Please customize these YAML files as per your specific requirements, such as the image name, secrets, configmap data, service ports, routing, etc.
