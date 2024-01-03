@@ -1,0 +1,35 @@
+To install Python on multiple virtual machines, you can use a shell script to automate the process. Here's an example script that you can modify to fit your specific needs:
+
+```shell
+#!/bin/bash
+
+# List of virtual machine IPs or hostnames
+vms=("192.168.1.101" "192.168.1.102" "192.168.1.103")
+
+# Loop through each virtual machine and install Python
+for vm in "${vms[@]}"; do
+  echo "Installing Python on VM: $vm"
+
+  # SSH into the virtual machine and run the commands
+  ssh user@$vm << EOF
+    sudo apt-get update
+    sudo apt-get install -y python3
+    # Additional commands if needed
+    # ...
+
+    # Verify the Python installation
+    python3 --version
+    exit
+EOF
+
+  echo "Python installed on VM: $vm"
+done
+```
+
+Make sure to replace the VM IP addresses or hostnames in the `vms` array with the ones you have. Also, adjust the SSH command to use the correct username and authentication method for accessing the virtual machines.
+
+Save the script to a file (e.g., `install_python.sh`), make it executable (`chmod +x install_python.sh`), and then run it by executing `./install_python.sh`. The script will iterate over each virtual machine, connect via SSH, and install Python on each of them.
+
+Please note that this script assumes you are using a Debian-based distribution on your virtual machines. If you are using a different Linux distribution, you may need to adjust the package manager commands accordingly (e.g., `yum` for CentOS).
+
+I hope this helps!
