@@ -1,0 +1,18 @@
+```dockerfile
+FROM ubuntu:latest
+
+# Install Ansible and SSH
+RUN apt-get update && \
+    apt-get install -y ansible ssh
+
+# Set up working directory
+WORKDIR /ansible
+
+# Copy Ansible playbooks
+COPY playbook.yml .
+
+# Run Ansible playbook
+CMD ["ansible-playbook", "playbook.yml"]
+```
+
+This Dockerfile sets up an Ubuntu-based container with Ansible and SSH installed. It then copies your Ansible playbook file (`playbook.yml`) into the container's working directory. Finally, it runs the Ansible playbook when the container is started.
