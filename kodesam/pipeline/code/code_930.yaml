@@ -1,0 +1,23 @@
+```dockerfile
+FROM ubuntu:latest
+
+# Install Ansible and dependencies
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    apt-add-repository --yes --update ppa:ansible/ansible && \
+    apt-get install -y ansible
+
+# Copy Ansible configuration files
+COPY ansible.cfg /etc/ansible/ansible.cfg
+
+# Set up working directory
+WORKDIR /ansible
+
+# Copy Ansible playbooks
+COPY playbook.yml .
+
+# Run Ansible playbook
+CMD ["ansible-playbook", "playbook.yml"]
+```
+
+This Dockerfile creates a container based on the latest Ubuntu image and installs Ansible and its dependencies. It also copies the `ansible.cfg` configuration file to the default location and sets up the working directory to `/ansible`. The `playbook.yml` file is also copied to the container. Finally, the container runs the Ansible playbook specified in the `CMD` command.
