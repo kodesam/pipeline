@@ -1,0 +1,131 @@
+Here's an example of an Ansible playbook that provisions a master node and a worker node for an OpenShift cluster. Note that this playbook assumes you have already set up the necessary infrastructure (servers, networking, etc.) for the cluster.
+
+```yaml
+---
+- name: Provision OpenShift Cluster
+  hosts: all
+  gather_facts: false
+
+  vars:
+    cluster_name: mycluster
+    master_node_ip: 10.0.0.1
+    worker_node_ips:
+      - 10.0.0.2
+      - 10.0.0.3
+
+  tasks:
+    - name: Install Docker on all nodes
+      become: true
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Configure Docker daemon
+      become: true
+      copy:
+        content: |
+          [Service]
+          ExecStart=
+          ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:2375
+        dest: /etc/systemd/system/docker.service.d/override.conf
+
+    - name: Restart Docker daemon
+      become: true
+      systemd:
+        name: docker
+        state: restarted
+
+    - name: Enable Docker on system startup
+      become: true
+      systemd:
+        name: docker
+        enabled: yes
+
+    - name: Install OpenShift prerequisites
+      become: true
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+
+    - name: Add OpenShift repository
+      become: true
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add OpenShift repository
+      become: true
+      apt_repository:
+        repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+        state: present
+
+    - name: Install OpenShift packages
+      become: true
+      apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+
+    - name: Initialize OpenShift master node
+      become: true
+      command: kubeadm init --apiserver-advertise-address={{ master_node_ip }} --pod-network-cidr=10.244.0.0/16
+      register: kubeadm_init_result
+      changed_when: "'already initialized' not in kubeadm_init_result.stderr"
+
+    - name: Copy admin.conf to user's kubeconfig
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: ~/.kube/config
+        remote_src: true
+
+    - name: Install Flannel network plugin
+      become: true
+      command: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+      when: "'already initialized' not in kubeadm_init_result.stderr"
+
+    - name: Generate join command for worker nodes
+      local_action: shell kubeadm token create --print-join-command
+      register: join_command
+
+    - name: Copy join command to worker nodes
+      become: true
+      command: "{{ item }}"
+      with_items: "{{ join_command.stdout_lines }}"
+      when: "'already initialized' not in kubeadm_init_result.stderr and inventory_hostname != 'master_node'"
+
+  handlers:
+    - name: Restart kubelet service
+      become: true
+      systemd:
+        name: kubelet
+        state: restarted
+```
+
+This playbook assumes you have already set up SSH connectivity to the target nodes. In the `vars` section, you can define the cluster name, the IP address of the master node (`master_node_ip`), and the IP addresses of the worker nodes (`worker_node_ips`).
+
+The playbook performs the following tasks:
+
+1. Installs Docker on all nodes.
+2. Configures and restarts the Docker daemon.
+3. Installs OpenShift prerequisites and adds the OpenShift repository.
+4. Installs OpenShift packages (`kubelet`, `kubeadm`, `kubectl`).
+5. Initializes the OpenShift master node.
+6. Copies the `admin.conf` file to the user's kubeconfig.
+7. Installs the Flannel network plugin.
+8. Generates the join command for worker nodes.
+9. Executes the join command on each worker node.
+10. Restarts the `kubelet` service on all nodes.
+
+You can execute this playbook using the `ansible-playbook` command:
+
+```bash
+ansible-playbook -i inventory.ini provision_cluster.yaml
+```
+
+Note: Make sure to update the `inventory.ini` file with the IP addresses of your target nodes and specify the correct Ansible user and SSH key, if necessary.
