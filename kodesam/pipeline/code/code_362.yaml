@@ -1,0 +1,21 @@
+Certainly! Here's an example of a Dockerfile for creating a container for ArgoCD:
+
+```Dockerfile
+FROM argoproj/argocd:v2.1.0
+
+# Add any additional customizations or configuration here
+
+# Expose the web UI and API server ports
+EXPOSE 8080 8081
+
+# Set the entrypoint
+CMD ["argocd-server"]
+```
+
+In this Dockerfile, we start with the base image `argoproj/argocd:v2.1.0` which contains the ArgoCD server. You can add any additional customizations or configuration specific to your needs.
+
+We expose ports `8080` and `8081` to allow access to the ArgoCD web UI and API server respectively.
+
+Finally, we set the `CMD` to `argocd-server` to start the ArgoCD server when the container launches.
+
+You can build this Dockerfile using the `docker build` command and run the resulting image using `docker run`.
