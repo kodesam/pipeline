@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
     - name: web-container
-      image: registry.ocp4.example.com:8443/redhattraining/podman-info-times:v0.1
+      image:  registry.ocp4.example.com:8443/redhattraining/podman-nginx-helloworld
       ports:
         - containerPort: 80
 
@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: web-container
-          image: registry.ocp4.example.com:8443/redhattraining/podman-info-times:v0.1
+          image:  registry.ocp4.example.com:8443/redhattraining/podman-nginx-helloworld
           ports:
             - containerPort: 80
 
