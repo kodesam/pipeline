@@ -1,0 +1,28 @@
+FROM ubuntu:latest
+
+# Install Ansible dependencies
+RUN apt-get update && \
+    apt-get install -y \
+        python \
+        python3-pip \
+        ssh \
+        openssh-client
+
+# Install Ansible
+RUN pip3 install ansible
+
+# Set up working directory
+WORKDIR /ansible
+
+# Set up SSH key for Ansible
+ARG SSH_PRIVATE_KEY
+RUN mkdir -p /root/.ssh && \
+    echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa && \
+    chmod 600 /root/.ssh/id_rsa && \
+    ssh-keyscan -H <target_host> >> /root/.ssh/known_hosts
+
+# Copy Ansible playbooks
+COPY playbook.yml .
+
+# Run Ansible playbook
+CMD ["ansible-playbook", "playbook.yml"]
