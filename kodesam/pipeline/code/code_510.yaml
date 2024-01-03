@@ -1,0 +1,19 @@
+The ArgoCD team maintains an official Docker image that you can use to create an ArgoCD container. You can pull the image from the Docker Hub using the following command:
+
+```bash
+docker pull argoproj/argocd:v2.1.0
+```
+
+This image is tagged with the version number `v2.1.0`, but you can replace it with the desired version.
+
+Once you have pulled the image, you can create and run an ArgoCD container using the following command:
+
+```bash
+docker run -d --name argocd-server -p 8080:8080 argoproj/argocd:v2.1.0
+```
+
+This command creates a detached (`-d`) container named `argocd-server`, maps port `8080` of the container to port `8080` of the host, and uses the `argoproj/argocd:v2.1.0` image.
+
+You can then access the ArgoCD web UI by opening `http://localhost:8080` in your browser.
+
+Note: Make sure to replace `v2.1.0` with the desired version number, if applicable.
