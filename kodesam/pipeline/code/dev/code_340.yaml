@@ -1,22 +1,17 @@
-Certainly! Below is an example of a Kubernetes YAML file that creates a web application pod, along with a namespace, deployment, secrets, configmap, service, and route.
-
-```yaml
-# web_app.yaml
 
 # Namespace
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: my-namespace
+  name: app
 
 ---
-
 # Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web-app-deployment
-  namespace: my-namespace
+  namespace: app
 spec:
   replicas: 1
   selector:
@@ -29,31 +24,29 @@ spec:
     spec:
       containers:
         - name: web-app
-          image: your/web-app-image
+          image: quay.io/centos7/nginx-120-centos7
           ports:
             - containerPort: 80
 
 ---
-
 # Secrets
 apiVersion: v1
 kind: Secret
 metadata:
   name: web-app-secrets
-  namespace: my-namespace
+  namespace: app
 type: Opaque
 data:
   username: YWRtaW4=     # Base64 encoded value for 'admin'
   password: cGFzc3dvcmQ= # Base64 encoded value for 'password'
 
 ---
-
 # ConfigMap
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: web-app-config
-  namespace: my-namespace
+  namespace: app
 data:
   config.ini: |
     [server]
@@ -61,13 +54,12 @@ data:
     timezone = UTC
 
 ---
-
 # Service
 apiVersion: v1
 kind: Service
 metadata:
   name: web-app-service
-  namespace: my-namespace
+  namespace: app
 spec:
   selector:
     app: web-app
@@ -77,19 +69,13 @@ spec:
       targetPort: 80
 
 ---
-
 # Route (Assuming OpenShift)
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: web-app-route
-  namespace: my-namespace
+  namespace: app
 spec:
   to:
     kind: Service
     name: web-app-service
-```
-
-You can save this YAML file as `web_app.yaml` and apply it to your Kubernetes cluster using the `kubectl apply -f web_app.yaml` command.
-
-Note: Update the placeholders such as `your/web-app-image` with the actual image name and adjust any other values as per your requirements before applying the file.
