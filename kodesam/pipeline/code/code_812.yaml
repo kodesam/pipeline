@@ -1,0 +1,14 @@
+FROM ubuntu:latest
+
+# Install Ansible and SSH
+RUN apt-get update && \
+    apt-get install -y ansible ssh
+
+# Set up working directory
+WORKDIR /ansible
+
+# Copy Ansible playbooks
+COPY playbook.yml .
+
+# Run Ansible playbook
+CMD ["ansible-playbook", "playbook.yml"]
