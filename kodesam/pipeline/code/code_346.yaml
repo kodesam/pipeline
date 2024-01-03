@@ -1,0 +1,30 @@
+Certainly! Here's an example of an Ansible playbook that performs a health check on Linux VMs:
+
+```yaml
+---
+- name: Linux VM Health Check
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Check CPU Usage
+      shell: "echo $(($(grep 'cpu ' /proc/stat | awk '{print ($2+$4)*100/($2+$4+$5)}')))"
+      register: cpu_usage
+
+    - name: Check Memory Usage
+      shell: "echo $(($(free -m | awk '/Mem:/ {print $3/$2 * 100.0}')))"
+      register: mem_usage
+
+    - name: Check Disk Usage
+      shell: "df -h / | awk '/\\// {print $(NF-1)}' | sed 's/%//g'"
+      register: disk_usage
+
+    - name: Display Health Check Results
+      debug:
+        msg: "CPU Usage: {{ cpu_usage.stdout }}%, Memory Usage: {{ mem_usage.stdout }}%, Disk Usage: {{ disk_usage.stdout }}%"
+```
+
+This playbook performs the following tasks:
+
+1. Checks CPU usage by reading the system CPU statistics from the `/proc/stat` file.
+2. Checks memory usage by using the `free` command and calculating the percentage of
