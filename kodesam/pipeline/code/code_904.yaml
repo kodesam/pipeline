@@ -1,0 +1,103 @@
+Sure! Here is an example of Kubernetes YAML files to create a pod, deployment, secrets, configmap, services, and routes for a web application:
+
+1. **Pod YAML file (pod.yaml):**
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-pod
+spec:
+  containers:
+    - name: web-container
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+```
+
+2. **Deployment YAML file (deployment.yaml):**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+```
+
+3. **Secrets YAML file (secrets.yaml):**
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secrets
+type: Opaque
+data:
+  username: BASE64_ENCODED_USERNAME
+  password: BASE64_ENCODED_PASSWORD
+```
+Replace `BASE64_ENCODED_USERNAME` and `BASE64_ENCODED_PASSWORD` with the base64-encoded values of your actual username and password.
+
+4. **ConfigMap YAML file (configmap.yaml):**
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  app.properties: |
+    key1=value1
+    key2=value2
+```
+
+5. **Services YAML file (services.yaml):**
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  selector:
+    app: web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+6. **Routes YAML file (routes.yaml):**
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ingress
+spec:
+  rules:
+    - host: example.com
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: web-service
+              port:
+                number: 80
+```
+Replace `example.com` with your actual domain for routing.
+
+You can apply these YAML files to your Kubernetes cluster using the `kubectl apply -f <filename>` command. Replace `<filename>` with the actual filename for each YAML file.
+
+Please customize these YAML files as per your specific requirements, such as the image name, secrets, configmap data, service ports, routing, etc.
