@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: helloworld
-        image: quay.io/ubuntu/nginx
+        image: quay.io/fedora/nginx:latest
         ports:
         - containerPort: 80
 
