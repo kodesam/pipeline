@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: web-container
-          image:  quay.io/fedora/nginx-122
+          image:  quay.io/fedora/nginx:latest
           ports:
             - containerPort: 80
 
