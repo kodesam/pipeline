@@ -24,7 +24,7 @@ spec:
       - name: helloworld
         image: quay.io/centos7/nginx-120-centos7
         ports:
-        - containerPort: 80
+        - containerPort: 8080
 
 ---
 apiVersion: v1
@@ -37,8 +37,8 @@ spec:
     app: helloworld
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 80
+      port: 8080
+      targetPort: 8080
 
 ---
 apiVersion: route.openshift.io/v1
