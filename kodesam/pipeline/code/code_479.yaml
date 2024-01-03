@@ -1,0 +1,38 @@
+To achieve this task, you can use the `requests` library in Python to send a GET request to `google.com` and check the response status code. If the status code is 200 (OK), you can print "Success". Otherwise, you can create an alert and send it to the Zenoss server as an API response.
+
+Here's an example Python script that accomplishes this:
+
+```python
+import requests
+
+# Send GET request to google.com
+response = requests.get("http://google.com")
+
+# Check response status code
+if response.status_code == 200:
+    print("Success")
+else:
+    alert = {
+        "title": "Website Alert",
+        "message": f"Failed to access google.com. Status code: {response.status_code}",
+        # Additional fields for the alert if needed
+        # ...
+    }
+
+    # Send alert to Zenoss server
+    zenoss_url = "http://zenoss-server/api/alerts"
+    zenoss_response = requests.post(zenoss_url, json=alert)
+
+    # Check if the alert was successfully sent
+    if zenoss_response.status_code == 200:
+        print("Alert sent to Zenoss server")
+    else:
+        print("Failed to send alert to Zenoss server")
+
+```
+
+Make sure you have the `requests` library installed before running the script. You can install it by running `pip install requests`. Replace the `zenoss-server` in the `zenoss_url` variable with the actual URL of your Zenoss server's API endpoint.
+
+Once you have saved the script to a file (e.g., `check_website.py`), you can run it by executing `python check_website.py`.
+
+Please note that this script assumes you have proper network connectivity and access permissions to send requests to `google.com` and your Zenoss server. Make sure to modify the script accordingly if you need to send alerts using a different method or to a different server.
