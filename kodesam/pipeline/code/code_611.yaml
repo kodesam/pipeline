@@ -1,0 +1,17 @@
+FROM ubuntu:latest
+
+# Install Ansible
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    apt-add-repository --yes --update ppa:ansible/ansible && \
+    apt-get install -y ansible && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up working directory
+WORKDIR /ansible
+
+# Copy Ansible playbooks
+COPY playbook.yml .
+
+# Run Ansible playbook
+CMD ["ansible-playbook", "playbook.yml"]
