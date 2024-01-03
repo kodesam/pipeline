@@ -1,6 +1,6 @@
-I apologize for the confusion. Here's an example of a Kubernetes YAML file that defines a deployment for a Hello World application, along with services and a route:
 
-```yaml
+
+```
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: helloworld
-        image: your-hello-world-image
+        image: quay.io/nginx:latest
         ports:
         - containerPort: 80
 
@@ -45,6 +45,3 @@ spec:
     name: helloworld-service
   tls:
     termination: edge
-```
-
-You can save the above YAML in a file (e.g., helloworld.yaml) and apply it to your Kubernetes cluster using the `kubectl apply -f helloworld.yaml` command. This will create the deployment, service, and route for your Hello World application.
