@@ -1,0 +1,35 @@
+FROM argoproj/argocd:v2.1.0
+
+# Set environment variables
+ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/google-cloud-sdk/bin
+ENV ARGOCD_OPTS ''
+
+# Install additional dependencies
+RUN apt-get update && \
+    apt-get install -y \
+        curl \
+        wget \
+        git \
+        openssh-client \
+        gettext-base && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install kubectl
+RUN wget https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl && \
+    chmod +x /usr/local/bin/kubectl && \
+    kubectl version --client
+
+# Install helm
+RUN wget https://get.helm.sh/helm-v3.7.1-linux-amd64.tar.gz && \
+    tar -zxvf helm-v3.7.1-linux-amd64.tar.gz && \
+    mv linux-amd64/helm /usr/local/bin/helm && \
+    rm -rf helm-v3.7.1-linux-amd64.tar.gz linux-amd64
+
+# Expose the web UI and API server ports
+EXPOSE 8080 8001
+
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
