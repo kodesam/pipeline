@@ -1,0 +1,35 @@
+Here is an example of a Dockerfile for a Jenkins container:
+
+```
+FROM jenkins/jenkins:lts
+
+USER root
+
+# Install necessary dependencies
+RUN apt-get update && apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg2 \
+    software-properties-common
+
+# Install Docker CLI
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
+    && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
+    && apt-get update && apt-get install -y docker-ce-cli
+
+# Change back to Jenkins user
+USER jenkins
+
+# Install plugins if needed
+# RUN /usr/local/bin/install-plugins.sh plugin1 plugin2 plugin3
+
+```
+
+This Dockerfile is based on the official Jenkins image (`jenkins/jenkins:lts`). It first switches to the root user to install necessary dependencies, including apt-transport-https, ca-certificates, curl, gnupg2, and software-properties-common. 
+
+Then, it installs the Docker CLI by adding the Docker repository key and adding the Docker repository. After that, it updates the packages and installs docker-ce-cli.
+
+Finally, it switches back to the Jenkins user and optionally, you can add the `RUN /usr/local/bin/install-plugins.sh` command to install additional Jenkins plugins if needed. 
+
+You can build the Docker image using the `docker build` command and run it using the `docker run` command.
