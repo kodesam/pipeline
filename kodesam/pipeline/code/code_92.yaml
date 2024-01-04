@@ -1,0 +1,38 @@
+Here is an example of an Ansible playbook YAML file that can be used to perform a health check on virtual machines:
+
+```yaml
+---
+- name: Health Check for Virtual Machines
+  hosts: virtual_machines
+  gather_facts: true
+
+  tasks:
+    - name: Check CPU Usage
+      shell: "echo $(($(grep 'cpu ' /proc/stat | awk '{print $2+$4}') * 100 / $(grep 'cpu ' /proc/stat | awk '{sum=$2+$4+$5} END {print sum}')))"
+      register: cpu_usage_result
+
+    - name: Check Memory Usage
+      shell: "free -m | awk '/Mem:/ { printf $3*100/$2 }'"
+      register: memory_usage_result
+
+    - name: Check Disk Usage
+      shell: "df -h --output=pcent / | awk 'NR==2{print substr($0, 1, length($0)-1)}'"
+      register: disk_usage_result
+
+  post_tasks:
+    - name: Display Health Check Results
+      debug:
+        msg: "CPU Usage: {{ cpu_usage_result.stdout }}%, Memory Usage: {{ memory_usage_result.stdout }}%, Disk Usage: {{ disk_usage_result.stdout }}%"
+```
+
+This playbook uses the `shell` module to run commands on the target virtual machines and register the results in variables. It performs three health checks: CPU usage, memory usage, and disk usage.
+
+After all the tasks are completed, the `post_tasks` section will display the results on the Ansible console using the `debug` module.
+
+To execute this playbook, save it as a YAML file (e.g., `health_check.yml`), and then run the following command:
+
+```
+ansible-playbook -i inventory_file health_check.yml
+```
+
+Make sure to replace `virtual_machines` with the group or individual hosts you want to perform the health check on in the inventory file.
