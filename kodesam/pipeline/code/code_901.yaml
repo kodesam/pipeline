@@ -1,0 +1,7 @@
+To get the list of nodes in an OpenShift cluster, you can use the `oc` command-line tool with the `get nodes` command. Here is how you can use it:
+
+```
+oc get nodes
+```
+
+This command will list all the nodes in the current OpenShift cluster along with their status, roles, and other information.
