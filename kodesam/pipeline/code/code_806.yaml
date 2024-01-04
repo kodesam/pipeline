@@ -1,0 +1,103 @@
+To create a web application pod in an OpenShift cluster, you need to create several resources including:
+
+1. Namespace - A logical boundary for your application resources.
+2. Deployment - Manages the pod and ensures the desired number of replicas are running.
+3. Secrets - Stores sensitive information like passwords, tokens, etc.
+4. ConfigMap - Stores configuration data for your application.
+5. Service - Exposes the running pods within the cluster.
+6. Route - Exposes the service outside the cluster.
+
+Below is an example of how you can create these resources:
+
+1. Namespace:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: your-namespace
+```
+
+2. Deployment:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: your-deployment
+  namespace: your-namespace
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: your-app
+  template:
+    metadata:
+      labels:
+        app: your-app
+    spec:
+      containers:
+      - name: your-app
+        image: your-image
+        ports:
+        - containerPort: 8080
+```
+
+3. Secrets:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: your-secret
+  namespace: your-namespace
+  ...
+```
+
+4. ConfigMap:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: your-configmap
+  namespace: your-namespace
+  ...
+```
+
+5. Service:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: your-service
+  namespace: your-namespace
+spec:
+  selector:
+    app: your-app
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+```
+
+6. Route:
+
+```yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: your-route
+  namespace: your-namespace
+spec:
+  host: your-host
+  to:
+    kind: Service
+    name: your-service
+    weight: 100
+  port:
+    targetPort: 8080
+```
+
+You can create these resources by running `oc create -f <filename>` command for each file. Make sure to replace the placeholders (e.g., `your-namespace`, `your-deployment`, etc.) with your desired values.
