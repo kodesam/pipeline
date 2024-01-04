@@ -1,0 +1,89 @@
+Here is an example of a Kubernetes YAML file that creates a web application pod including a namespace, deployment, secrets, configmap, service, and route:
+
+```
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app-deployment
+  namespace: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+        - name: web-app
+          image: your-web-app-image:latest
+          ports:
+            - containerPort: 8080
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: web-app-secret
+  namespace: app
+type: Opaque
+data:
+  username: base64-encoded-username
+  password: base64-encoded-password
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-app-config
+  namespace: app
+data:
+  config.properties: |
+    key1=value1
+    key2=value2
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-app-service
+  namespace: app
+spec:
+  selector:
+    app: web-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+---
+
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: web-app-route
+  namespace: app
+spec:
+  to:
+    kind: Service
+    name: web-app-service
+    weight: 100
+  port:
+    targetPort: 80
+  tls:
+    termination: edge
+```
+
+You can save the YAML file with a .yaml extension (e.g., web-app.yaml) and apply it to your Kubernetes cluster using the `kubectl apply -f web-app.yaml` command.
