@@ -1,0 +1,12 @@
+It seems like you want to import a module called `message` and use a `write` function from it to send a message to someone named John. 
+
+Here's a basic code structure to achieve that:
+
+```python
+import message
+
+# Call the write function from the message module
+message.write(to="John", message="Hey, want to meetup after work?")
+```
+
+Make sure that you have the `message` module installed or available in your project directory.
