@@ -1,0 +1,33 @@
+To create a code for CV screening between a job description and a resume, you can use a keyword matching approach. Here's an example code in Python:
+
+```python
+def cv_screening(job_description, resume):
+    # Convert job description and resume to lowercase for case-insensitive matching
+    job_description = job_description.lower()
+    resume = resume.lower()
+    
+    # Split job description and resume into a list of skills
+    job_skills = job_description.split()
+    resume_skills = resume.split()
+    
+    # Count the number of matching skills
+    num_matching_skills = len(set(job_skills) & set(resume_skills))
+    
+    # Calculate the percentage of must-have skills
+    must_have_skills_percentage = (num_matching_skills / len(job_skills)) * 100
+    
+    return num_matching_skills, must_have_skills_percentage
+
+# Example usage
+job_description = "We are looking for a software engineer with experience in Python and web development."
+resume = "I am a software engineer with 5 years of experience in Python and web development."
+
+num_matching_skills, must_have_skills_percentage = cv_screening(job_description, resume)
+
+print("Number of skills matching:", num_matching_skills)
+print("Must-have skills percentage:", must_have_skills_percentage)
+```
+
+In this example, the code takes in a job description and a resume as input. It converts both inputs to lowercase to perform case-insensitive matching. It splits the job description and resume into lists of skills by splitting on whitespaces. Then, it calculates the number of matching skills by finding the intersection of the two lists. Finally, it calculates the percentage of must-have skills based on the number of matching skills divided by the total number of skills in the job description.
+
+Please note that this is a simplified example, and you may need to customize it to suit your specific requirements. Consider using additional techniques such as natural language processing and machine learning for more accurate and robust CV screening.
