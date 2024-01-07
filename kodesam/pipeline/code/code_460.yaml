@@ -1,0 +1,33 @@
+To create a code for CV screening between a job description and a resume, you can use Natural Language Processing techniques and libraries such as NLTK or spaCy. Here is an example code in Python using spaCy:
+
+```python
+import spacy
+
+def cv_screening(job_description, resume):
+    nlp = spacy.load("en_core_web_sm")
+    
+    job_description_doc = nlp(job_description)
+    resume_doc = nlp(resume)
+    
+    # Extract relevant keywords from the job description
+    job_keywords = set([token.text.lower() for token in job_description_doc if not token.is_stop and token.is_alpha])
+    
+    # Compare the resume with the job keywords
+    matched_keywords = [token.text for token in resume_doc if token.text.lower() in job_keywords]
+    
+    # Calculate the percentage of keyword match
+    matching_percentage = (len(matched_keywords) / len(job_keywords)) * 100
+    
+    return matching_percentage
+
+# Example usage
+job_description = "We are looking for a software engineer with experience in Python and web development."
+resume = "I am a software engineer with 5 years of experience in Python and web development."
+
+matching_percentage = cv_screening(job_description, resume)
+print(f"Matching percentage: {matching_percentage}%")
+```
+
+In this example, the code takes in a job description and a resume as input. It uses spaCy to tokenize and process the text. It then extracts relevant keywords from the job description by removing stop words and non-alphabetic tokens. The code compares these keywords with the tokens in the resume and calculates the percentage of keyword match.
+
+Please note that this is a simplified example and may not cover all aspects of CV screening. You can further enhance the code by incorporating additional NLP techniques such as named entity recognition or sentiment analysis.
