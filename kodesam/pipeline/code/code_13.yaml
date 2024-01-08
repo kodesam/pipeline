@@ -1,0 +1,77 @@
+Sure! Here's an example of how you can generate code for a GitOps Operator project using Jinja templates:
+
+1. Create a `jinja_templates` folder where you will store your Jinja template files.
+
+2. Create a Jinja template file called `operator_group.yaml.j2` in the `jinja_templates` folder. This file will define the OperatorGroup resource.
+
+Here's an example content for the `operator_group.yaml.j2` file:
+
+```yaml
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: {{ operator_group_name }}
+  namespace: {{ namespace }}
+spec:
+  targetNamespaces:
+    - {{ target_namespace }}
+```
+
+3. Create another Jinja template file called `subscription.yaml.j2` in the `jinja_templates` folder. This file will define the Subscription resource.
+
+Here's an example content for the `subscription.yaml.j2` file:
+
+```yaml
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: {{ subscription_name }}
+  namespace: {{ namespace }}
+spec:
+  channel: {{ channel }}
+  name: {{ operator_name }}
+  source: {{ operator_source }}
+  sourceNamespace: {{ operator_source_namespace }}
+```
+
+4. Finally, create a Python script, like `generate_code.py`, to render the Jinja templates and generate the final code. 
+
+Here's an example code for `generate_code.py`:
+
+```python
+from jinja2 import Environment, FileSystemLoader
+
+# Define the variables for template rendering
+variables = {
+    'operator_group_name': 'my-operator-group',
+    'namespace': 'my-namespace',
+    'target_namespace': 'my-target-namespace',
+    'subscription_name': 'my-subscription',
+    'channel': 'my-channel',
+    'operator_name': 'my-operator',
+    'operator_source': 'my-operator-source',
+    'operator_source_namespace': 'my-operator-source-namespace'
+}
+
+# Set up the Jinja environment
+env = Environment(loader=FileSystemLoader('jinja_templates'))
+
+# Render the OperatorGroup template
+template = env.get_template('operator_group.yaml.j2')
+operator_group_code = template.render(variables)
+
+# Render the Subscription template
+template = env.get_template('subscription.yaml.j2')
+subscription_code = template.render(variables)
+
+# Save the generated code to files
+with open('operator_group.yaml', 'w') as file:
+    file.write(operator_group_code)
+
+with open('subscription.yaml', 'w') as file:
+    file.write(subscription_code)
+```
+
+When you run `generate_code.py`, it will render the Jinja templates using the provided variables and generate two files: `operator_group.yaml` and `subscription.yaml` with the final code.
+
+You can further modify the Jinja templates and update the variables in the `generate_code.py` script to fit your specific requirements.
