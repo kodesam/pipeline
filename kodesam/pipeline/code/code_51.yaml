@@ -1,0 +1,113 @@
+Here is an example of a Jinja template that you can use to generate the Kubernetes YAML file for creating an ELK (Elasticsearch, Logstash, and Kibana) application pod with a namespace, deployment, secrets, configmap, service, and route:
+
+```jinja2
+# Define the namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ namespace }}
+
+---
+
+# Define the deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elk-deployment
+  namespace: {{ namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elk-app
+  template:
+    metadata:
+      labels:
+        app: elk-app
+    spec:
+      containers:
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+          ports:
+            - containerPort: 9200
+          env:
+            - name: discovery.type
+              value: single-node
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:7.6.2
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: logstash-config
+              mountPath: /usr/share/logstash/pipeline/
+        - name: kibana
+          image: docker.elastic.co/kibana/kibana:7.6.2
+          ports:
+            - containerPort: 5601
+
+      volumes:
+        - name: logstash-config
+          configMap:
+            name: logstash-configmap
+
+---
+
+# Define the secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: elk-secrets
+  namespace: {{ namespace }}
+type: Opaque
+data:
+  username: {{ username | b64encode }}
+  password: {{ password | b64encode }}
+
+---
+
+# Define the configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-configmap
+  namespace: {{ namespace }}
+data:
+  logstash.conf: |
+    {{ logstash_config }}
+
+---
+
+# Define the service
+apiVersion: v1
+kind: Service
+metadata:
+  name: elk-service
+  namespace: {{ namespace }}
+spec:
+  selector:
+    app: elk-app
+  ports:
+    - name: elasticsearch
+      port: 9200
+    - name: logstash
+      port: 5000
+    - name: kibana
+      port: 5601
+
+---
+
+# Define the route
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: elk-route
+  namespace: {{ namespace }}
+spec:
+  host: {{ route_host }}
+  to:
+    kind: Service
+    name: elk-service
+
+```
+
+You can use this Jinja template with a templating engine of your choice (such as Jinja2 in Python) to generate the Kubernetes YAML file by providing the necessary input parameters.
