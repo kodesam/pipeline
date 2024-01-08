@@ -1,0 +1,46 @@
+To add the MCP_Check part to the playbook, you can use the `when` conditional statement to conditionally execute tasks based on a specific condition. Here's an updated version of the playbook:
+
+```yaml
+- name: Register Machine Config Pool
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Get Machine Config Pools
+      k8s_info:
+        kind: MachineConfigPool
+      register: mcps
+
+- name: Include MCP
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Include MCP Task File
+      include_tasks: mcp.yml
+      loop: "{{ mcps.resources }}"
+      loop_control:
+        loop_var: mcp
+      no_log: true
+
+- name: Sleep for 30 seconds to ensure MCP is refreshing
+  hosts: localhost
+  tasks:
+    - name: Pause for 30 seconds
+      pause:
+        seconds: 30
+      when: not pauseMCP
+
+- name: MCP Check
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Perform MCP Check
+      # Add your tasks here
+      # These tasks will be executed after the MCP has been included and the pause is finished
+      when: not pauseMCP
+```
+
+In the above playbook, the `MCP Check` section has been added as a separate play. This play is triggered only when the `pauseMCP` variable is False because of the `when` conditional statement.
+
+Inside the `MCP Check` play, you can include the necessary tasks that need to be performed after the MCP has been included and the pause is finished. You can add your own tasks between the `- name: Perform MCP Check` and `when: not pauseMCP` lines.
+
+Ensure that the `MCP Check` play is placed at the desired position in your playbook to execute the tasks accordingly.
