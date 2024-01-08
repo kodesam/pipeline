@@ -1,0 +1,32 @@
+If you want to gather vSphere platform details in an OpenShift cluster using Ansible, you can create a playbook with the following tasks:
+
+```yaml
+---
+- name: Gather vSphere Platform Details
+  hosts: localhost
+  gather_facts: true
+  tasks:
+    - name: Gather vSphere Platform Facts
+      community.vmware.vmware_vm_facts:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: false
+      register: vsphere_facts
+
+    - name: Debug vSphere Platform Details
+      debug:
+        var: vsphere_facts
+```
+
+In the above playbook, replace `{{ vcenter_hostname }}`, `{{ vcenter_username }}`, and `{{ vcenter_password }}` with the appropriate values for your vSphere environment. The `community.vmware.vmware_vm_facts` module is used to gather vSphere platform facts.
+
+Save this playbook to a file (e.g., `gather_vsphere_details.yaml`) and execute the playbook using the following command:
+
+```
+ansible-playbook gather_vsphere_details.yaml
+```
+
+This playbook will gather vSphere platform details for the specified vCenter server and display the gathered facts using the `debug` module.
+
+Note: You will need the `community.vmware.vmware_vm_facts` module installed to run this playbook. You can install it by running `ansible-galaxy collection install community.vmware`.
