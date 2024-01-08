@@ -1,0 +1,29 @@
+If you want to revoke an access token in an OpenShift cluster using Ansible, you can create a playbook with the following tasks:
+
+```yaml
+---
+- name: Revoke Access Token
+  hosts: localhost
+  tasks:
+    - name: Check if oc command is available
+      command: oc
+      register: oc_command
+      failed_when: oc_command.rc not in [0, 127]
+      changed_when: false
+
+    - name: Revoke Access Token
+      command: oc revoke token "{{ access_token }}"
+      become: true
+      become_user: root
+      when: oc_command.rc == 0
+```
+
+In the above playbook, the tasks first check if the `oc` command is available on the system. If it is available, it proceeds with revoking the access token using the `oc revoke token` command. Replace `{{ access_token }}` with the actual access token you want to revoke.
+
+Save this playbook to a file (e.g., `revoke_access_token.yaml`) and execute the following command to run it:
+
+```
+ansible-playbook revoke_access_token.yaml
+```
+
+Make sure to execute this playbook on a host that has the necessary permissions to revoke the access token in the OpenShift cluster. You may need to adjust the `become_user` value and other parameters based on your specific environment.
