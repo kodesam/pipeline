@@ -1,0 +1,57 @@
+To deploy an OpenShift cluster using a provisioner node, you can write a script that executes the `openshift-baremetal-install` CLI. 
+
+Here's an example of a script that you can use as a starting point for your deployment:
+
+```bash
+#!/bin/bash
+
+# Set the necessary environment variables
+export OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE=<release_image>
+export OPENSHIFT_INSTALL_INVOKER=openshift-provisioner
+export OPENSHIFT_INSTALL_CLUSTER_NAME=<cluster_name>
+
+# Set the path to the OpenShift baremetal installation directory
+INSTALL_DIR=/path/to/openshift-baremetal-install
+
+# Create the manifests directory and generate manifests
+mkdir -p $INSTALL_DIR/manifests
+$INSTALL_DIR/bin/openshift-baremetal-install --dir=$INSTALL_DIR create manifests
+
+# Generate ignition configurations
+$INSTALL_DIR/bin/openshift-baremetal-install --dir=$INSTALL_DIR create ignition-configs
+
+# Create the bootstrap resources
+$INSTALL_DIR/bin/openshift-baremetal-install --dir=$INSTALL_DIR create bootstrap
+
+# Start the bootstrap process
+$INSTALL_DIR/bin/openshift-baremetal-install --dir=$INSTALL_DIR --log-level=debug wait-for bootstrap-complete
+
+# Generate the master and worker nodes resources
+$INSTALL_DIR/bin/openshift-baremetal-install --dir=$INSTALL_DIR create manifests
+
+# Approve the csr requests
+APISERVER_POD=$(oc get pods -n openshift-machine-api --selector=app=machine-api-controllers --output=name)
+oc exec -n openshift-machine-api $APISERVER_POD -- /usr/bin/machine-config-daemon approve $(oc get csr -n openshift-machine-api -o json | jq -r '.items[] | select(.status == {} ) | .metadata.name')
+
+# Wait for the control plane nodes to become ready
+$INSTALL_DIR/bin/openshift-baremetal-install --dir=$INSTALL_DIR --log-level=debug wait-for control-plane --log-level=debug
+
+# Wait for the compute nodes to become ready
+$INSTALL_DIR/bin/openshift-baremetal-install --dir=$INSTALL_DIR --log-level=debug wait-for machines --list-machines
+
+echo "OpenShift cluster installation completed successfully."
+```
+
+Replace `<release_image>` with the desired OpenShift release image, and `<cluster_name>` with the desired name for your OpenShift cluster.
+
+Make sure to set the correct path to the OpenShift baremetal installation directory in the `INSTALL_DIR` variable.
+
+Save this script to a file (e.g., `deploy_openshift_cluster.sh`), and make it executable by running `chmod +x deploy_openshift_cluster.sh`.
+
+To deploy the OpenShift cluster, simply run the script:
+
+```
+./deploy_openshift_cluster.sh
+```
+
+The script will generate the necessary manifests, ignition configurations, and bootstrap resources. It
