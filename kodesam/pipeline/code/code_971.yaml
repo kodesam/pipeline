@@ -1,0 +1,18 @@
+To register the names of files in a variable in a programming language like Python, you can use the following code:
+
+```python
+file_names = []  # Create an empty list to store file names
+
+# File name registration
+file_names.append("file1.txt")
+file_names.append("file2.txt")
+file_names.append("file3.txt")
+
+# Accessing the file names later
+for file_name in file_names:
+    print(file_name)  # Or do any other operations with the file names
+```
+
+In the code snippet above, we create an empty list `file_names` to store the names of the files. Then, we use the `append()` method to add file names to the list. Later, you can access the file names by iterating over the list elements or performing any other operations as needed.
+
+The file names listed above ("file1.txt", "file2.txt", "file3.txt") are just examples; you can replace them with the actual file names you want to register.
