@@ -1,0 +1,27 @@
+To register the computes to a variable using an input in a Jinja template, you can use the `set_fact` module in combination with the `vars_prompt` module in an Ansible playbook. Here's an example:
+
+```yaml
+- hosts: your_hosts
+  vars_prompt:
+    - name: computes_input
+      prompt: "Enter the computes:"
+
+  tasks:
+    - name: Save Computes to Variable
+      set_fact:
+        computes: "{{ computes_input.split(',') }}"
+
+    - name: Debug Computes Variable
+      debug:
+        var: computes
+```
+
+In the above playbook, the `vars_prompt` module is used to prompt the user to enter the computes. The entered value is then stored in the `computes_input` variable.
+
+Next, the `set_fact` module is used to split the value of `computes_input` using a comma (`,`) as the delimiter and store the resulting list in the `computes` variable.
+
+Finally, the `debug` module is used to display the value of the `computes` variable.
+
+When you run this playbook, it will prompt you to enter the computes. You can provide a comma-separated list of computes. For example, if you enter `compute1,compute2,compute3`, the value `['compute1', 'compute2', 'compute3']` will be stored in the `computes` variable.
+
+You can then access or use the `computes` variable for further operations or tasks within your playbook.
