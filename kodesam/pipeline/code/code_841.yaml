@@ -1,0 +1,136 @@
+Here is an example of an Ansible playbook YAML file that you can use to create a master node and worker node for an OpenShift cluster with all the necessary configuration:
+
+```yaml
+---
+- name: Provision OpenShift Cluster
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # OpenShift Cluster Configuration
+    openshift_version: "4.6"
+    ocp_hostname: "ocp.example.com"
+    ocp_cluster_name: "mycluster"
+    ocp_domain: "example.com"
+
+    # Master Node Configuration
+    ocp_master_ip: "192.168.1.10"
+    ocp_master_hostname: "master1"
+    ocp_master_public_ip: "203.0.113.10"
+
+    # Worker Node Configuration
+    ocp_worker_ips:
+      - "192.168.1.20"
+      - "192.168.1.21"
+    ocp_worker_hostnames:
+      - "worker1"
+      - "worker2"
+    ocp_worker_public_ips:
+      - "203.0.113.20"
+      - "203.0.113.21"
+
+  tasks:
+    - name: Create Master Node
+      block:
+        - name: Create Master Infra
+          command: |
+            openshift-baremetal-install create manifests --dir=/root/install-config
+          become: true
+          become_user: root
+
+        - name: Modify Master Infra
+          lineinfile:
+            state: present
+            path: "/root/install-config/manifests/cluster-scheduler-02-config.yml"
+            line: "  max_masters: 1"
+          become: true
+          become_user: root
+
+        - name: Generate Master Ignition
+          command: |
+            openshift-baremetal-install create ignition-configs --dir=/root/install-config --master-ignition-file=/root/master.ign --worker-ignition-file=/root/worker.ign
+          become: true
+          become_user: root
+
+        - name: Copy Master Ignition
+          copy:
+            src: "/root/master.ign"
+            dest: "/var/www/html/master.ign"
+          become: true
+          become_user: root
+
+        - name: Run Master Install
+          command: |
+            openshift-baremetal-install --dir=/root/install-config --log-level=info
+          become: true
+          become_user: root
+          environment:
+            HTTP_PROXY: "{{ ansible_env.http_proxy | default('') }}"
+            HTTPS_PROXY: "{{ ansible_env.https_proxy | default('') }}"
+            NO_PROXY: "{{ ansible_env.no_proxy | default('') }}"
+      tags:
+        - master
+
+    - name: Create Worker Nodes
+      block:
+        - name: Create Worker Infra
+          command: |
+            openshift-baremetal-install create manifests --dir=/root/install-config --append-ssh-key=/root/.ssh/id_rsa.pub
+          become: true
+          become_user: root
+
+        - name: Generate Worker Ignition
+          command: |
+            openshift-baremetal-install --dir=/root/install-config --log-level=info
+          become: true
+          become_user: root
+          environment:
+            HTTP_PROXY: "{{ ansible_env.http_proxy | default('') }}"
+            HTTPS_PROXY: "{{ ansible_env.https_proxy | default('') }}"
+            NO_PROXY: "{{ ansible_env.no_proxy | default('') }}"
+      tags:
+        - worker
+
+    - name: Display Access Information
+      block:
+        - name: Wait for API to be available
+          uri:
+            url: "https://{{ ocp_hostname }}/api"
+            method: GET
+            return_content: yes
+            validate_certs: false
+          register: api_result
+          until: api_result.status == 200
+          retries: 60
+          delay: 10
+          become: no
+
+        - name: Display Access Information
+          debug:
+            msg: |
+              OpenShift Console: https://{{ ocp_hostname }}/console
+              Username: kubeadmin
+              Password: {{ lookup('file', '/root/install-config/auth/kubeadmin-password') }}
+      tags:
+        - access
+```
+
+This Ansible playbook performs the following steps:
+
+1. Creates the master node infrastructure and modifies the cluster configuration to support a single master node.
+2. Generates the master ignition file and copies it to the web server.
+3. Runs the master node installation process.
+4. Creates the worker node infrastructure.
+5. Generates the worker ignition files.
+6. Runs the worker node installation process.
+7. Waits for the OpenShift API to become available.
+8. Displays the access information, including the console URL, username, and password.
+
+You can modify the variables in the playbook to match your desired configuration, such as the OpenShift version, cluster name, hostnames, and IP addresses.
+
+To execute the playbook, save it to a file (e.g., `provision_cluster.yml`) and run the following command:
+
+```bash
+ansible-playbook provision_cluster.yml
+```
+
+Make sure you have Ansible installed and have SSH access to the target hosts.
