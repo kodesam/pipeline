@@ -1,0 +1,22 @@
+To import all the environment variables needed for the playbook to run, you can use the `gather_facts` module in the `pre_tasks` section of your Ansible playbook. The `gather_facts` module can automatically collect information about the target hosts, including environment variables. Here's an example:
+
+```yaml
+- hosts: your_hosts
+  gather_facts: yes
+  pre_tasks:
+    - name: Gather Facts
+      setup:
+
+  tasks:
+    # Rest of your tasks go here
+```
+
+In the above playbook, the `gather_facts` parameter is set to `yes`, which enables the gathering of facts. The `setup` module is used in the `pre_tasks` section to collect information about the target hosts.
+
+By default, the `setup` module gathers a wide range of facts, including environment variables. Once the facts are gathered, you can access the environment variables using the `hostvars` variable, which contains the gathered facts.
+
+For example, to access the value of an environment variable named `MY_VARIABLE`, you can use `{{ hostvars[inventory_hostname].ansible_env.MY_VARIABLE }}`.
+
+With the environment variables available, you can proceed with the rest of your tasks in the playbook using the gathered facts as needed.
+
+Note: Ensure that the hosts in your inventory file are properly configured to gather facts and that SSH access is established to the target hosts.
