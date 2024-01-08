@@ -1,0 +1,43 @@
+The provided playbook snippet is using the `k8s_info` module to register the Machine Config Pool (MCP) information. It then includes a separate task file `mcp.yml` for each resource within the MCP, and pauses for 30 seconds to ensure the MCP is refreshed.
+
+Here's an example of how you can structure the playbook to achieve this:
+
+```yaml
+- name: Register Machine Config Pool
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Get Machine Config Pools
+      k8s_info:
+        kind: MachineConfigPool
+      register: mcps
+
+- name: Include MCP
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Include MCP Task File
+      include_tasks: mcp.yml
+      loop: "{{ mcps.resources }}"
+      loop_control:
+        loop_var: mcp
+      no_log: true
+
+- name: Sleep for 30 seconds to ensure MCP is refreshing
+  hosts: localhost
+  tasks:
+    - name: Pause for 30 seconds
+      pause:
+        seconds: 30
+      when: not pauseMCP
+```
+
+In the above playbook, we split the tasks into three plays. The first play registers the MCP information using the `k8s_info` module and stores the result in the `mcps` variable.
+
+The second play includes the MCP task file `mcp.yml` for each resource within the MCP. It uses the `include_tasks` module with a `loop` to iterate over `mcps.resources`. The `no_log` option is used to prevent outputting sensitive information.
+
+The third play introduces a pause of 30 seconds to ensure the MCP is refreshed. The `pause` module is used for this purpose. The condition `not pauseMCP` is used to control whether the pause occurs. You can adjust this condition as needed.
+
+Make sure to replace `mcp.yml` with the actual name and path to your MCP task file. Adjust the `k8s_info` module and `pause` module options according to your requirements.
+
+By organizing the playbook in this way, you can register the MCP, include task files for each resource, and pause the playbook execution as needed.
