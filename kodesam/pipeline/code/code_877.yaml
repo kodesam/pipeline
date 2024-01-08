@@ -1,0 +1,31 @@
+To register the machine configuration pool in an Ansible playbook, you can use the `ovirt_pool_info` module from the `ovirt-engine-sdk-python` package. Here's an example:
+
+```yaml
+- name: Register Machine Config Pool
+  hosts: localhost
+  tasks:
+    - name: Get Machine Config Pool Info
+      ovirt_pool_info:
+        auth: "{{ ovirt_auth }}"
+        data_center: "YourDataCenter"
+        name: "YourPoolName"
+      register: pool_info
+
+    - name: Save Pool to Variable
+      set_fact:
+        machine_config_pool: "{{ pool_info.pool }}"
+
+    - name: Debug Machine Config Pool
+      debug:
+        var: machine_config_pool
+```
+
+In the above playbook, the `ovirt_pool_info` module is used to retrieve information about the machine configuration pool. The `auth` parameter should contain the authentication details required to connect to the oVirt engine. The `data_center` parameter is used to specify the data center where the machine configuration pool is located, and the `name` parameter is used to specify the name of the machine configuration pool you want to register.
+
+After fetching the information using the `ovirt_pool_info` module, the result is stored in the `pool_info` variable using the `register` keyword.
+
+Next, the `set_fact` module is used to assign the value of `pool_info.pool` (the machine configuration pool) to the `machine_config_pool` variable.
+
+Finally, the `debug` module is used to display the value of the `machine_config_pool` variable.
+
+You need to provide the appropriate values for the `auth` parameter, `data_center`, and `name` for your specific oVirt environment. Once executed, the machine configuration pool will be stored in the `machine_config_pool` variable, which you can use for further operations, such as creating virtual machines.
