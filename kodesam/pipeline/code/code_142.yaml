@@ -1,0 +1,22 @@
+Here is an example of an Ansible playbook that includes tasks to deploy an OpenShift worker node, gather cluster ID, provision virtual machines, provision bare metal, and provision VMs:
+
+```yaml
+---
+- name: Deploy OpenShift Worker Node
+  hosts: worker_nodes
+  tasks:
+    - name: Task 1 - Gather Cluster ID
+      # Define the task to gather the cluster ID
+      # ...
+    - name: Task 2 - Provision Virtual Machines
+      # Define the task to provision virtual machines
+      # ...
+    - name: Task 3 - Provision Bare Metal
+      # Define the task to provision bare metal
+      # ...
+    - name: Task 4 - Provision VMs
+      # Define the task to provision VMs
+      # ...
+```
+
+In this example, `worker_nodes` is the target group of hosts where you want to deploy OpenShift worker nodes. Each task is defined using the `name` parameter and is followed by the specific task definition. You can replace the comments (`# Define the task...`) with the actual task details.
