@@ -1,0 +1,24 @@
+Certainly! Here's an example of a task for provisioning VMs in an Ansible playbook:
+
+```yaml
+- name: Provision VMs
+  hosts: virtualization_server
+  tasks:
+    - name: Create virtual machine
+      virt:
+        name: vm1
+        state: running
+        memory: 2048
+        vcpu: 2
+        disk:
+          - size: 20
+            pool: default
+        network:
+          - name: default
+        cdrom:
+          - path: /path/to/iso/image.iso
+```
+
+In this example, `virtualization_server` is the target host or group of hosts where the virtual machines will be provisioned. The `virt` module is used to create a virtual machine with the specified parameters. Adjust the values of the `name`, `memory`, `vcpu`, `disk`, `network`, and `cdrom` parameters based on your requirements.
+
+Make sure you have the necessary dependencies installed (e.g., `libvirt`, `qemu`) and that the Ansible control machine has the appropriate permissions to interact with the virtualization server.
