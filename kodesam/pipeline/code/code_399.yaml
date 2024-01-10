@@ -1,0 +1,50 @@
+Certainly! Here's an example of an Ansible playbook that creates GitOps repositories in Kubernetes:
+
+```yaml
+- name: Create GitOps Repositories
+  hosts: your_kubernetes_master
+  tasks:
+    - name: Create ConfigMap for GitOps repository
+      k8s:
+        api_version: v1
+        kind: ConfigMap
+        namespace: your_namespace
+        metadata:
+          name: gitops-repo-configmap
+        data:
+          repository-url: http://your-git-repo-url
+          username: your-git-username
+          password: your-git-password
+      register: configmap_result
+
+    - name: Create Deployment for GitOps repository
+      k8s:
+        api_version: apps/v1
+        kind: Deployment
+        namespace: your_namespace
+        metadata:
+          name: gitops-repo-deployment
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: gitops-repo
+          template:
+            metadata:
+              labels:
+                app: gitops-repo
+            spec:
+              containers:
+                - name: gitops-repo-container
+                  image: your-gitops-repo-image
+                  env:
+                    - name: REPO_CONFIGMAP_NAME
+                      value: gitops-repo-configmap
+      register: deployment_result
+```
+
+In this example, `your_kubernetes_master` is the target host or group of hosts where your Kubernetes cluster is running. The tasks use the `k8s` module to create a ConfigMap and a Deployment for the GitOps repository. Adjust the values of `your_namespace`, `your-git-repo-url`, `your-git-username`, `your-git-password`, `your-gitops-repo-image`, and other parameters based on your requirements.
+
+Make sure you have Ansible installed and the `k8s` module available.
+
+Note: This example assumes that you have the necessary Docker image for the GitOps repository. Adjust the task to match your specific GitOps repository setup.
