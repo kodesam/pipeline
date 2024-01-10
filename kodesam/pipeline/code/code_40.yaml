@@ -1,0 +1,63 @@
+Sure! Here's an example of a YAML script to create a web application pod with a namespace, deployment, and secrets:
+
+```yaml
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-namespace
+
+---
+
+# Secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secrets
+  namespace: my-namespace
+type: Opaque
+data:
+  username: <base64-encoded-username>
+  password: <base64-encoded-password>
+
+---
+
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  namespace: my-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app
+          image: my-app-image:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: my-secrets
+                  key: username
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: my-secrets
+                  key: password
+```
+
+In this script, we first define a namespace called "my-namespace". Then, we create a secret called "my-secrets" within the "my-namespace" namespace. The secret contains base64-encoded values for the username and password.
+
+Finally, we define a deployment called "my-app" within the "my-namespace" namespace. The deployment specifies the number of replicas, the container image to use, and the ports to expose. It also sets environment variables using the values from the "my-secrets" secret.
+
+You can customize the names, values, and other parameters in this script to fit your specific requirements.
