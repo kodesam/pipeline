@@ -1,0 +1,38 @@
+Sure! Here's an example of a YAML script that defines a route in a web application:
+
+```yaml
+routes:
+  - path: /home
+    controller: HomeController
+    action: index
+    method: GET
+
+  - path: /users
+    controller: UserController
+    action: list
+    method: GET
+
+  - path: /users/{id}
+    controller: UserController
+    action: show
+    method: GET
+
+  - path: /users
+    controller: UserController
+    action: create
+    method: POST
+
+  - path: /users/{id}
+    controller: UserController
+    action: update
+    method: PUT
+
+  - path: /users/{id}
+    controller: UserController
+    action: delete
+    method: DELETE
+```
+
+In this example, we have defined several routes for a web application. Each route has a `path` that specifies the URL pattern, a `controller` that indicates the controller class responsible for handling the request, an `action` that specifies the method within the controller to be executed, and a `method` that indicates the HTTP method for the route.
+
+You can add more routes to this YAML script by following the same structure.
