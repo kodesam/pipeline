@@ -1,0 +1,75 @@
+Sure! Here's an example of a YAML script for creating a web application pod with a namespace, deployment, secrets, configmap, and service:
+
+```yaml
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-namespace
+
+---
+
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-deployment
+  namespace: my-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app-container
+          image: my-app-image:latest
+          ports:
+            - containerPort: 80
+
+---
+
+# Secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-app-secrets
+  namespace: my-namespace
+data:
+  username: <base64-encoded-username>
+  password: <base64-encoded-password>
+
+---
+
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-app-config
+  namespace: my-namespace
+data:
+  config.property1: value1
+  config.property2: value2
+
+---
+
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+  namespace: my-namespace
+spec:
+  selector:
+    app: my-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+Please note that you need to replace `<base64-encoded-username>` and `<base64-encoded-password>` with the actual base64-encoded values of your username and password for the secrets.
