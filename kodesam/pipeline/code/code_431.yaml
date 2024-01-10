@@ -1,0 +1,43 @@
+Certainly! Here's an example of a task for provisioning VMs in OpenShift in an Ansible playbook:
+
+```yaml
+- name: Provision VMs in OpenShift
+  hosts: openshift_master
+  tasks:
+    - name: Create project
+      kubevirt_project:
+        name: myproject
+        state: present
+
+    - name: Create virtual machine instances
+      kubevirt_vm:
+        name: vm1
+        api_version: kubevirt.io/v1alpha3
+        kind: VirtualMachine
+        namespace: myproject
+        spec:
+          running: true
+          template:
+            metadata:
+              labels:
+                app: myapp
+              annotations:
+                virtual.openshift.io/parent: myvmi
+            spec:
+              domain:
+                resources:
+                  requests:
+                    memory: 2Gi
+                    cpu: 2
+              volumes:
+                - name: myvolume
+                  persistentVolumeClaim:
+                    claimName: myclaim
+                    readOnly: false
+```
+
+In this example, `openshift_master` is the target host or group of hosts where the OpenShift master is installed. The tasks use the `kubevirt_project` and `kubevirt_vm` modules to create a project (namespace) and provision virtual machine instances, respectively. Adjust the values of the `name`, `spec`, and other parameters based on your requirements.
+
+Ensure that you have the necessary dependencies installed, such as the `kubectl` command-line tool and the `kubevirt` extension, and that the Ansible control machine has the appropriate permissions to interact with the OpenShift cluster.
+
+Note: This example assumes that you have already set up OpenShift and have the required namespaces, persistent volume claims, and other resources in place. Adjust the task to your specific OpenShift environment.
