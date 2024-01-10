@@ -1,0 +1,28 @@
+Certainly! Here's an example of an Ansible playbook that includes a loop to create application privileges in Kubernetes:
+
+```yaml
+- name: Create Application Privileges
+  hosts: your_kubernetes_master
+  tasks:
+    - name: Create Application Privileges
+      include_tasks: application_privileges.yaml
+      loop:
+        - app1
+        - app2
+```
+
+In this example, `your_kubernetes_master` is the target host or group of hosts where your Kubernetes cluster is running. The `include_tasks` module is used to include the tasks defined in a separate YAML file called `application_privileges.yaml`. The loop is applied to iterate over the list of application names (`app1`, `app2`).
+
+Inside the `application_privileges.yaml` file, you can define the specific tasks for creating application privileges based on the application name. For example:
+
+```yaml
+- name: Create Application Privileges for {{ item }}
+  community.kubernetes.k8s:
+    definition: "{{ lookup ('template', '{{ role_path }}/templates/{{ item }}') | from_yaml }}"
+    state: present
+    apply: yes
+```
+
+In this example, the `{{ item }}` variable is used to reference the current iteration value from the loop.
+
+Make sure you have Ansible installed and the necessary modules available. Adjust the playbook and task files to match your specific application privileges setup and template files.
