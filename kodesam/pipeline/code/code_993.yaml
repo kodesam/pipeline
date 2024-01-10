@@ -1,0 +1,12 @@
+Sure! Here's an example of how you can add a route to a YAML script:
+
+```yaml
+routes:
+  - path: /example
+    method: GET
+    handler: exampleHandler
+```
+
+In the above code, we define a route with the path "/example", the HTTP method "GET", and the handler "exampleHandler". You can replace "exampleHandler" with the actual name of your handler function.
+
+Make sure to add this code within the appropriate section of your YAML script, depending on the framework or tool you are using.
