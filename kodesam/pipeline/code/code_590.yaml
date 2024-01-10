@@ -1,0 +1,25 @@
+Sure! Here's an example of a YAML script in Jinja format:
+
+```jinja
+{% set name = "John" %}
+{% set age = 25 %}
+{% set city = "New York" %}
+
+person:
+  name: {{ name }}
+  age: {{ age }}
+  city: {{ city }}
+```
+
+In this example, we have defined three variables (`name`, `age`, and `city`) using the `set` statement. These variables are then used within the YAML structure to generate the desired output.
+
+The resulting YAML output would be:
+
+```yaml
+person:
+  name: John
+  age: 25
+  city: New York
+```
+
+You can modify the values of the variables as per your requirements.
