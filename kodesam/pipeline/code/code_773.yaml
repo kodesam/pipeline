@@ -1,0 +1,18 @@
+Certainly! Here's an example of an Ansible playbook that creates application privileges in Kubernetes:
+
+```yaml
+- name: Create Application Privileges
+  hosts: your_kubernetes_master
+  tasks:
+    - name: Create Application Privileges
+      community.kubernetes.k8s:
+        definition: "{{ lookup ('template', '{{ role_path }}/templates/{{ item }}')| from_yaml }}"
+        state: present
+        apply: yes
+```
+
+In this example, `your_kubernetes_master` is the target host or group of hosts where your Kubernetes cluster is running. The tasks use the `community.kubernetes.k8s` module to create application privileges in Kubernetes based on a template. Adjust the values of `role_path` and `templates/{{ item }}` to point to the correct template files.
+
+Make sure you have Ansible installed and the `community.kubernetes.k8s` module available.
+
+Note: This example assumes that you have defined the necessary application privileges in the template files. Adjust the task to match your specific application privileges setup.
