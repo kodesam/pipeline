@@ -1,0 +1,23 @@
+Certainly! Here's an example of an Ansible playbook that includes tasks to deploy an OpenShift worker node and includes other tasks such as Gather_Cluster_ID.yaml, provision_virtual.yaml, provision_baremetal.yaml, and Provision VM's.yaml:
+
+```yaml
+---
+- name: Deploy OpenShift Worker Node
+  hosts: worker_nodes
+  tasks:
+    - name: Gather Cluster ID
+      include_tasks: Gather_Cluster_ID.yaml
+
+    - name: Provision Virtual Machines
+      include_tasks: provision_virtual.yaml
+
+    - name: Provision Bare Metal
+      include_tasks: provision_baremetal.yaml
+
+    - name: Provision VM's
+      include_tasks: Provision VM's.yaml
+```
+
+In this example, `worker_nodes` is the target group of hosts where you want to deploy the OpenShift worker nodes. Each task is included using the `include_tasks` module, which allows you to reference and execute separate task files. Replace the filenames (`Gather_Cluster_ID.yaml`, `provision_virtual.yaml`, `provision_baremetal.yaml`, `Provision VM's.yaml`) with the actual filenames of your task files.
+
+Make sure that each task file (e.g., `Gather_Cluster_ID.yaml`) contains the necessary tasks and their definitions.
