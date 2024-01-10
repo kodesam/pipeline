@@ -1,0 +1,34 @@
+Certainly! Here's an example of an Ansible playbook that creates a GitOps Operator Project, OperatorGroups, and Subscription in OpenShift:
+
+```yaml
+- name: Create GitOps Operator Project, OperatorGroups, and Subscription
+  hosts: openshift_master
+  tasks:
+    - name: Create GitOps Operator Project
+      openshift_project:
+        name: gitops-operator-project
+        state: present
+
+    - name: Create OperatorGroup
+      openshift_operator_group:
+        name: gitops-operator-group
+        namespace: gitops-operator-project
+        state: present
+
+    - name: Create Subscription
+      openshift_operator_subscription:
+        name: gitops-operator-subscription
+        namespace: gitops-operator-project
+        operator_group: gitops-operator-group
+        source: community-operators
+        source_namespace: openshift-marketplace
+        source_labels:
+          - olm.catalogSource=community-operators
+        state: present
+```
+
+In this example, `openshift_master` is the target host or group of hosts where the OpenShift master is installed. The tasks use the `openshift_project`, `openshift_operator_group`, and `openshift_operator_subscription` modules to create the GitOps Operator Project, OperatorGroups, and Subscription, respectively. Adjust the values of the `name`, `namespace`, `operator_group`, `source`, `source_namespace`, and other parameters based on your requirements.
+
+Ensure that you have the necessary dependencies installed, such as the `kubectl` command-line tool and the appropriate Ansible modules for interacting with OpenShift.
+
+Note: This example assumes that you have already set up OpenShift and have the required Operator Catalog and OperatorSources in place. Adjust the task to your specific OpenShift environment.
