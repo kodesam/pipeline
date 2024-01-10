@@ -1,0 +1,25 @@
+Certainly! Here's an example of how you can modify the existing code to run it on an Nginx container:
+
+```python
+import docker
+
+# Create a Docker client
+client = docker.from_env()
+
+# Specify the container name and image
+container_name = "blue-runbook-ai"
+image_name = "nginx:latest"
+
+# Check if the container already exists
+existing_containers = client.containers.list(filters={"name": container_name})
+if not existing_containers:
+    # Create a new container from the Nginx image
+    container = client.containers.run(image_name, detach=True, ports={"80": 8080}, name=container_name)
+    print(f"Container '{container.short_id}' created successfully.")
+else:
+    container = existing_containers[0]
+    print(f"Container '{container.short_id}' already exists.")
+
+# Get the IP address of the container
+container_ip = container.attrs["NetworkSettings"]["IPAddress"]
+print(f"Container IP
