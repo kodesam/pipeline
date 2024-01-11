@@ -1,0 +1,55 @@
+If you want to generate the `oc get nodes` command in a programming language, you can use the following examples in different programming languages:
+
+Python:
+```python
+import subprocess
+
+result = subprocess.run(['oc', 'get', 'nodes'], capture_output=True, text=True)
+print(result.stdout)
+```
+
+Java:
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        Process process = Runtime.getRuntime().exec("oc get nodes");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            System.out.println(line);
+        }
+
+        reader.close();
+    }
+}
+```
+
+C#:
+```csharp
+using System;
+using System.Diagnostics;
+
+class Program
+{
+    static void Main()
+    {
+        Process process = new Process();
+        process.StartInfo.FileName = "oc";
+        process.StartInfo.Arguments = "get nodes";
+        process.StartInfo.RedirectStandardOutput = true;
+        process.Start();
+
+        string output = process.StandardOutput.ReadToEnd();
+        Console.WriteLine(output);
+
+        process.WaitForExit();
+    }
+}
+```
+
+These examples use subprocess in Python, Process in Java, and Process in C# to execute the `oc get nodes` command and capture the output. The output is then printed to the console.
