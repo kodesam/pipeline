@@ -1,0 +1,138 @@
+Certainly! Here's an example of an Ansible playbook YAML file to create an ELK cluster deployment with cluster roles, role binding, namespace, deployment, secrets, configmap, service, and route.
+
+```yaml
+---
+- name: Create ELK Cluster
+  hosts: localhost
+  tasks:
+    - name: Create Namespace
+      community.kubernetes.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ namespace }}"
+        state: present
+
+    - name: Create ClusterRole
+      community.kubernetes.k8s:
+        api_version: rbac.authorization.k8s.io/v1
+        kind: ClusterRole
+        name: elk-role
+        rules:
+          - verbs:
+              - get
+              - list
+              - create
+              - update
+              - delete
+              - watch
+              - patch
+            api_groups:
+              - ""
+              - extensions
+            resources:
+              - pods
+              - deployments
+              - services
+              - configmaps
+              - secrets
+              - routes
+        state: present
+
+    - name: Create RoleBinding
+      community.kubernetes.k8s:
+        api_version: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        name: elk-role-binding
+        namespace: "{{ namespace }}"
+        role_ref:
+          api_group: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: elk-role
+        subjects:
+          - kind: ServiceAccount
+            name: default
+            namespace: "{{ namespace }}"
+        state: present
+
+    - name: Create ELK Deployment
+      community.kubernetes.k8s:
+        api_version: apps/v1
+        kind: Deployment
+        name: elk-deployment
+        namespace: "{{ namespace }}"
+        labels:
+          app: elk
+        spec:
+          replicas: "{{ replicaset }}"
+          selector:
+            matchLabels:
+              app: elk
+          template:
+            metadata:
+              labels:
+                app: elk
+            spec:
+              containers:
+                - name: elasticsearch
+                  image: elasticsearch:7.14.0
+                  ports:
+                    - containerPort: 9200
+                      name: http
+                    - containerPort: 9300
+                      name: transport
+                - name: kibana
+                  image: kibana:7.14.0
+                  ports:
+                    - containerPort: 5601
+                      name: http
+        state: present
+
+    - name: Create ELK Service
+      community.kubernetes.k8s:
+        api_version: v1
+        kind: Service
+        name: elk-service
+        namespace: "{{ namespace }}"
+        spec:
+          selector:
+            app: elk
+          ports:
+            - name: es-http
+              port: 9200
+            - name: es-transport
+              port: 9300
+            - name: kibana
+              port: 5601
+        state: present
+
+    - name: Create ELK Route
+      community.kubernetes.k8s:
+        api_version: route.openshift.io/v1
+        kind: Route
+        name: elk-route
+        namespace: "{{ namespace }}"
+        spec:
+          to:
+            kind: Service
+            name: elk-service
+            weight: 100
+          port:
+            targetPort: 5601
+        state: present
+```
+
+Before running this playbook, make sure to have the `community.kubernetes` collection installed. You can install it using the following command:
+
+```
+ansible-galaxy collection install community.kubernetes
+```
+
+To run the playbook, save it as a YAML file (e.g., `elk-cluster.yml`) and execute it using the `ansible-playbook` command:
+
+```
+ansible-playbook elk-cluster.yml
+```
+
+Replace the placeholder variables `{{ namespace }}` with the desired namespace name, and `{{ replicaset }}` with the number of replicas in the ELK deployment.
+
+This playbook will create the necessary resources for an ELK cluster, including the namespace, cluster role, role binding, deployment, secrets, configmap, service, and route.
