@@ -1,0 +1,24 @@
+Certainly! Here's an example of a Kubernetes YAML file that you can use as a starting point:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  containers:
+    - name: my-container
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+```
+
+This YAML file describes a Kubernetes Pod that runs a single container based on the nginx image, exposing port 80.
+
+You can save this YAML file to a file called `pod.yaml` and create the Pod in your Kubernetes cluster by running the following command:
+
+```bash
+kubectl apply -f pod.yaml
+```
+
+This will create the Pod with the specified configuration.
