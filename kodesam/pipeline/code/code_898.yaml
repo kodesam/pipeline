@@ -1,0 +1,123 @@
+Certainly! Here's an example of an Ansible playbook YAML file to create a master node and worker node for an OpenShift cluster on bare metal, along with the necessary configuration.
+
+```yaml
+---
+- hosts: all
+  tasks:
+    - name: Install required packages
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - docker
+        - iptables
+        - ip6tables
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+        - wget
+        - git
+        - bind-utils
+        - NetworkManager
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+- hosts: master
+  tasks:
+    - name: Configure firewall rules for OpenShift
+      command: iptables -A INPUT -p tcp --dport 6443 -j ACCEPT
+    - name: Disable SELinux
+      selinux:
+        policy: targeted
+        state: disabled
+      become: yes
+    - name: Install OpenShift prerequisites
+      command: yum install -y "{{ item }}"
+      with_items:
+        - wget
+        - git
+        - net-tools
+        - bind-utils
+        - iptables-services
+        - bridge-utils
+        - bash-completion
+    - name: Download OpenShift Origin binaries
+      get_url:
+        url: "https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-server-v3.11.0-0cbc58b-linux-64bit.tar.gz"
+        dest: /tmp/openshift-origin.tar.gz
+    - name: Extract OpenShift Origin binaries
+      become: yes
+      unarchive:
+        src: /tmp/openshift-origin.tar.gz
+        dest: /usr/local
+        remote_src: yes
+    - name: Configure OpenShift environment variables
+      lineinfile:
+        path: /etc/profile.d/openshift.sh
+        line: "export PATH=$PATH:/usr/local/openshift-origin-server-v3.11.0-0cbc58b"
+      become: yes
+    - name: Configure OpenShift master node
+      command: oc cluster up --public-hostname={{ inventory_hostname }} --enable=service-catalog,router,registry
+      become: yes
+
+- hosts: worker
+  tasks:
+    - name: Configure firewall rules for OpenShift
+      command: iptables -A INPUT -p tcp --dport 8443 -j ACCEPT
+    - name: Disable SELinux
+      selinux:
+        policy: targeted
+        state: disabled
+      become: yes
+    - name: Install OpenShift prerequisites
+      command: yum install -y "{{ item }}"
+      with_items:
+        - wget
+        - git
+        - net-tools
+        - bind-utils
+        - iptables-services
+        - bridge-utils
+        - bash-completion
+    - name: Download OpenShift Origin binaries
+      get_url:
+        url: "https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-server-v3.11.0-0cbc58b-linux-64bit.tar.gz"
+        dest: /tmp/openshift-origin.tar.gz
+    - name: Extract OpenShift Origin binaries
+      become: yes
+      unarchive:
+        src: /tmp/openshift-origin.tar.gz
+        dest: /usr/local
+        remote_src: yes
+    - name: Configure OpenShift environment variables
+      lineinfile:
+        path: /etc/profile.d/openshift.sh
+        line: "export PATH=$PATH:/usr/local/openshift-origin-server-v3.11.0-0cbc58b"
+      become: yes
+    - name: Configure OpenShift worker node
+      command: oc cluster up --public-hostname={{ inventory_hostname }} --enable=service-catalog,router,registry
+      become: yes
+```
+
+In this playbook, the tasks are divided into three plays:
+
+1. The first play installs the necessary packages and starts the Docker service on all hosts.
+
+2. The second play configures the master node. It opens the required firewall ports, disables SELinux, installs OpenShift prerequisites, downloads and extracts the OpenShift Origin binaries, sets environment variables, and configures the OpenShift master node using the `oc cluster up` command.
+
+3. The third play configures the worker node(s) in a similar manner as the second play.
+
+To execute this playbook, you need to replace the placeholders in the playbook with your actual inventory hosts in the `hosts` section. For example, `all`, `master`, and `worker` can be replaced with your respective host groups or host IP addresses.
+
+Save the playbook as a YAML file, e.g., `openshift-cluster.yml`. Then, you can run the playbook using the `ansible-playbook` command:
+
+```
+ansible-playbook openshift-cluster.yml
+```
+
+This will execute the playbook and perform the necessary steps to set up the OpenShift cluster on your bare metal nodes.
+
+Please note that this playbook assumes the usage of OpenShift Origin version 3.11.0. Make sure to adjust the OpenShift Origin binaries URL according to your desired version.
