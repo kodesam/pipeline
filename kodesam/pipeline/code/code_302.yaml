@@ -1,0 +1,23 @@
+You can use the following YAML playbook to execute the `oc get nodes` command using Ansible:
+
+```yaml
+---
+- name: Get nodes
+  hosts: all
+  tasks:
+    - name: Execute oc get nodes command
+      shell: oc get nodes
+      register: result
+
+    - name: Display output
+      debug:
+        var: result.stdout_lines
+```
+
+Save the playbook file with a `.yaml` extension (e.g., `get_nodes.yaml`) and execute it using the `ansible-playbook` command:
+
+```bash
+ansible-playbook get_nodes.yaml
+```
+
+This will run the `oc get nodes` command on all hosts specified in the inventory file and display the output.
