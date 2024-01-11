@@ -1,0 +1,67 @@
+To create a master node and worker node for an OpenShift cluster on bare metal with the given IP addresses (master node IP: 192.168.100.10, worker node IP: 192.168.200.10), you can use Ansible to automate the setup. Here's an example Ansible playbook YAML file:
+
+```yaml
+---
+- name: Provision OpenShift nodes
+  hosts: all
+  gather_facts: false
+  become: true
+
+  vars:
+    openshift_version: "4.8"
+    master_ip: "192.168.100.10"
+    worker_ip: "192.168.200.10"
+
+  tasks:
+    - name: Install dependencies
+      apt:
+        name:
+          - docker.io
+          - apt-transport-https
+          - curl
+
+    - name: Install OpenShift prerequisites
+      shell: |
+        curl -LO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ openshift_version }}/openshift-install-linux.tar.gz
+        tar -xvf openshift-install-linux.tar.gz
+        mv openshift-install /usr/local/bin/
+        chmod +x /usr/local/bin/openshift-install
+        rm -f openshift-install-linux.tar.gz
+
+    - name: Configure Docker
+      lineinfile:
+        path: /etc/docker/daemon.json
+        line: "{\"insecure-registries\": [\"{{ master_ip }}:5000\"]}"
+      notify: Restart Docker
+
+    - name: Restart Docker
+      service:
+        name: docker
+        state: restarted
+
+    - name: Bootstrap OpenShift master node
+      shell: |
+        openshift-install create cluster --dir=./ --master-config=master-config.yaml
+      args:
+        chdir: /path/to/installation-directory
+
+    - name: Join worker node to OpenShift cluster
+      shell: |
+        openshift-install create cluster --dir=./ --append-appendable=true --append-bootstrap-retry=false --append-bootstrap-retry-wait=5 --node-config=worker-config.yaml
+      args:
+        chdir: /path/to/installation-directory
+```
+
+Make sure to replace `/path/to/installation-directory` with the actual path where you want to store the OpenShift installation files.
+
+Before running the playbook, make sure you have installed Ansible on your control machine and have SSH access to the target nodes.
+
+To execute the playbook, run the following command:
+
+```
+ansible-playbook -i "192.168.100.10, 192.168.200.10," playbook.yaml
+```
+
+Note the trailing comma after each IP address in the inventory (`-i`) argument.
+
+Please note that this playbook assumes a basic setup and may need to be modified based on your specific requirements or environment. Additionally, this is just an example and may not cover the entire OpenShift deployment process. It is recommended to refer to the official OpenShift documentation for detailed instructions on setting up an OpenShift cluster.
