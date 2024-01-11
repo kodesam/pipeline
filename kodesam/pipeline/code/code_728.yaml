@@ -1,0 +1,85 @@
+Creating a deployment to perform health checks of various components in an OpenShift cluster requires a combination of Kubernetes YAML manifests and custom scripts. Below is an example of creating a deployment to check the health of pods, deployments, routes, API response, operator status, cluster version, and web console status.
+
+```yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: health-check-deployment
+  labels:
+    app: health-check
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: health-check
+  template:
+    metadata:
+      labels:
+        app: health-check
+    spec:
+      containers:
+      - name: health-check-container
+        image: health-check-image:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          # Execute custom health check script here
+          # Check pod health
+          if ! kubectl get pods --field-selector=status.phase!=Running; then
+            echo "Pod health check failed"
+            exit 1
+          fi
+
+          # Check deployment health
+          if ! kubectl get deployments --field-selector=status.replicas!=status.availableReplicas; then
+            echo "Deployment health check failed"
+            exit 1
+          fi
+
+          # Check route health
+          if ! kubectl get routes --field-selector=status.ingress!=[]; then
+            echo "Route health check failed"
+            exit 1
+          fi
+
+          # Check API response
+          if ! curl -s http://api-server:8080/healthz; then
+            echo "API health check failed"
+            exit 1
+          fi
+
+          # Check operator status
+          if ! oc get operatorhub -n openshift-operator-lifecycle-manager --no-headers | grep -i running; then
+            echo "Operator status check failed"
+            exit 1
+          fi
+
+          # Check cluster version
+          if ! oc get clusterversion; then
+            echo "Cluster version check failed"
+            exit 1
+          fi
+
+          # Check web console status
+          if ! oc get oauthclient -n openshift-authentication --no-headers | grep -i oauth-openshift; then
+            echo "Web console status check failed"
+            exit 1
+          fi
+
+        # Update resources and environment variables as per your requirements
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+```
+
+In this YAML manifest, a deployment named `health-check-deployment` with one replica is created. The deployment runs a container named `health-check-container` that executes a custom health check script. The script checks the health of pods, deployments, routes, API response, operator status, cluster version, and web console status using appropriate `kubectl` and `oc` commands.
+
+Replace the image name `health-check-image:latest` with the actual image name and tag corresponding to your custom health check script.
+
+To deploy this health check deployment, save the YAML manifest into a file (e.g., `health-check-deployment.yaml`) and apply it to your OpenShift cluster
