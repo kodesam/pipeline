@@ -1,0 +1,115 @@
+To create a web application pod with a namespace, deployment, secrets, config map, service, and route in Kubernetes, you can use the following YAML files:
+
+1. Namespace YAML:
+```yaml
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-namespace
+```
+
+2. Deployment YAML:
+```yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-webapp-deployment
+  namespace: my-namespace
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-webapp
+  template:
+    metadata:
+      labels:
+        app: my-webapp
+    spec:
+      containers:
+        - name: webapp-container
+          image: my-webapp-image:latest
+          ports:
+            - containerPort: 80
+```
+
+3. Secrets YAML:
+```yaml
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secrets
+  namespace: my-namespace
+data:
+  username: dXNlcm5hbWU=
+  password: cGFzc3dvcmQ=
+```
+
+4. ConfigMap YAML:
+```yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-configmap
+  namespace: my-namespace
+data:
+  key1: value1
+  key2: value2
+```
+
+5. Service YAML:
+```yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-webapp-service
+  namespace: my-namespace
+spec:
+  selector:
+    app: my-webapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+```
+
+6. Route YAML (assuming you're using OpenShift):
+```yaml
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: my-webapp-route
+  namespace: my-namespace
+spec:
+  to:
+    kind: Service
+    name: my-webapp-service
+    weight: 100
+    port:
+      targetPort: 80
+  wildcardPolicy: None
+```
+
+Make sure to replace the placeholders (`my-namespace`, `my-webapp-image`, etc.) in the YAML files with your actual values. Save each YAML file with a `.yaml` or `.yml` extension, for example `my_namespace.yaml`, `my_deployment.yaml`, etc.
+
+To apply these YAML files, use the `kubectl` command in the following format:
+```
+kubectl apply -f <yaml-file>
+```
+Replace `<yaml-file>` with the path to the respective YAML file.
+
+Apply the files in the following order:
+1. Namespace YAML
+2. Secrets YAML
+3. ConfigMap YAML
+4. Deployment YAML
+5. Service YAML
+6. Route YAML
+
+Please note that these YAML files are meant to be used as examples and may need modification based on your specific requirements.
