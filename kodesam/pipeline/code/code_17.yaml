@@ -1,0 +1,63 @@
+Here is an example of a YAML file for an Ansible playbook to deploy OpenHIM on a master and worker node:
+
+```yaml
+---
+- name: Deploy OpenHIM
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Install Java
+      apt:
+        name: default-jdk
+        state: present
+
+    - name: Add OpenHIM apt repository
+      apt_repository:
+        repo: "deb http://builds.openhim.org/apt/repo/ {{ ansible_distribution_release }} main"
+        state: present
+        filename: openhim
+
+    - name: Import GPG key for OpenHIM apt repository
+      apt_key:
+        url: "http://builds.openhim.org/apt/repo/openhim.gpg.key"
+        state: present
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install OpenHIM core package
+      apt:
+        name: openhim-core
+        state: present
+
+    - name: Configure OpenHIM
+      template:
+        src: openhim-config.j2
+        dest: /etc/openhim-core/config.xml
+        owner: openhim
+        group: openhim
+        mode: 0644
+
+    - name: Start OpenHIM
+      systemd:
+        name: openhim-core
+        state: started
+        enabled: true
+```
+
+The `openhim-config.j2` template should contain the necessary configuration values for OpenHIM.
+
+You would need to replace `all` in the `hosts` field with the appropriate inventory group or host names for your master and worker nodes.
+
+Note: This playbook assumes you're using a Debian-based distribution. If you're using a different distribution, you'll need to adjust the package names and repository settings accordingly.
+
+To run this playbook, you can save it in a file called `openhim.yaml` and execute the following command:
+
+```shell
+ansible-playbook openhim.yaml
+```
+
+Make sure you have Ansible installed and the necessary SSH connectivity to the target hosts.
