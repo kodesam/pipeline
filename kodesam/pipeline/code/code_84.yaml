@@ -1,0 +1,59 @@
+To deploy an OpenShift cluster on bare metal, you can use Terraform to provision the infrastructure and the OpenShift Installer to install and configure the cluster. Here is a step-by-step guide on how to do it:
+
+1. Set up your infrastructure using Terraform:
+   - Create a new directory for your Terraform code.
+   - Write a Terraform configuration file (e.g., `main.tf`) to define your infrastructure, including the number of master and worker nodes, network settings, storage, and any other necessary resources. Here's an example configuration:
+
+```hcl
+provider "metal" {
+  token = "<your_project_token>"
+}
+
+resource "metal_device" "openshift_masters" {
+  count      = 3
+  hostname   = "openshift-master-${count.index}"
+  image      = "rhcos-4.8"
+  plan       = "t1.medium.x86"
+  facilities = ["<your_facility>"]
+  project_id = "<your_project_id>"
+}
+
+resource "metal_device" "openshift_workers" {
+  count      = 3
+  hostname   = "openshift-worker-${count.index}"
+  image      = "rhcos-4.8"
+  plan       = "t1.medium.x86"
+  facilities = ["<your_facility>"]
+  project_id = "<your_project_id>"
+}
+```
+
+2. Initialize and apply the Terraform configuration:
+   - Run `terraform init` in your directory to initialize Terraform.
+   - Run `terraform apply` to create your infrastructure based on the configuration.
+
+3. Install the OpenShift Installer:
+   - Download the OpenShift installer binary from the Red Hat Customer Portal or the OpenShift GitHub repository.
+   - Make the installer binary executable by running `chmod +x openshift-install`.
+
+4. Create an OpenShift installation configuration file:
+   - Create a file named `install-config.yaml` and specify the desired configuration for your OpenShift cluster. This includes specifying the control plane and worker nodes, networking, storage, and other parameters. Refer to the OpenShift documentation for more details on the configuration options.
+
+5. Generate the OpenShift installation manifests:
+   - Run the following command to generate the OpenShift installation manifests:
+     ```bash
+     ./openshift-install create manifests --dir=<installation_directory>
+     ```
+
+6. Customize the installation manifests (optional):
+   - If needed, you can modify the generated manifests to customize the installation process. For example, you can configure additional networking options, storage settings, or enable additional features.
+
+7. Create the OpenShift cluster:
+   - Run the following command to create the OpenShift cluster:
+     ```bash
+     ./openshift-install create cluster --dir=<installation_directory>
+     ```
+
+8. Follow the instructions provided by the OpenShift installer to complete the cluster installation process. This typically involves bootstrapping the control plane, joining worker nodes, and configuring networking.
+
+After following these steps, you should have an OpenShift cluster up and running on your bare metal nodes. You can then use the OpenShift CLI (`oc`) to manage and deploy applications in the cluster.
