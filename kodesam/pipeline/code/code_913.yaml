@@ -1,0 +1,35 @@
+To check the health of a Windows server, you can use various tools and commands in PowerShell. Here are a few examples:
+
+1. Get-Service:
+   This cmdlet allows you to check the status of Windows services on the server. You can use it to see if any critical services are not running.
+
+   Example:
+   ```powershell
+   Get-Service -Name * | Where-Object {$_.Status -ne 'Running'}
+   ```
+
+2. Get-WmiObject:
+   This cmdlet allows you to retrieve information from Windows Management Instrumentation (WMI) on the server. You can use it to check system resources like CPU, memory, and disk utilization.
+
+   Example:
+   ```powershell
+   Get-WmiObject -Class Win32_OperatingSystem | Select-Object CSName, TotalVisibleMemorySize, FreePhysicalMemory, Caption
+   ```
+
+3. Test-NetConnection:
+   This cmdlet allows you to test network connectivity to a specific server or port. You can use it to check if the server is reachable from your network.
+
+   Example:
+   ```powershell
+   Test-NetConnection -ComputerName "ServerName" -Port 80
+   ```
+
+4. Get-EventLog:
+   This cmdlet allows you to retrieve event log entries from the server. You can use it to check for any critical or error events that may indicate a problem.
+
+   Example:
+   ```powershell
+   Get-EventLog -LogName System -EntryType Error -Newest 10
+   ```
+
+These are just a few examples of PowerShell commands you can use to assess the health of a Windows server. You can combine and customize these commands based on your specific monitoring requirements.
