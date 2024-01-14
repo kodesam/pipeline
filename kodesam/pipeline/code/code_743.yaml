@@ -1,0 +1,86 @@
+To deploy a Kubernetes cluster on bare metal, you can use a combination of tools such as Terraform, Ansible, and kubeadm. Here is a step-by-step guide on how to do it:
+
+1. Set up your infrastructure using Terraform: 
+- Create a new directory for your Terraform code.
+- Write a Terraform configuration file (e.g., `main.tf`) to define your infrastructure, including the number of nodes, network settings, and any other necessary resources. Here's an example configuration:
+
+```
+provider "metal" {
+  token = "<your_project_token>"
+}
+
+resource "metal_device" "k8s_nodes" {
+  count      = 3
+  hostname   = "k8s-node-${count.index}"
+  image      = "ubuntu-20.04"
+  plan       = "t1.small.x86"
+  facilities = ["<your_facility>"]
+  project_id = "<your_project_id>"
+}
+```
+
+2. Initialize and apply the Terraform configuration:
+- Run `terraform init` in your directory to initialize Terraform.
+- Run `terraform apply` to create your infrastructure based on the configuration.
+
+3. Configure the nodes using Ansible:
+- Create an Ansible playbook or role to configure the nodes with the necessary dependencies and settings for Kubernetes. Here's an example playbook:
+
+```
+- name: Configure Kubernetes nodes
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Disable swap
+      command: swapoff -a
+      when: ansible_swaptotal_mb > 0
+
+    - name: Set kernel parameters
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        sysctl_set: yes
+        state: present
+      with_items:
+        - { name: "net.ipv4.ip_forward", value: "1" }
+        - { name: "net.bridge.bridge-nf-call-iptables", value: "1" }
+        - { name: "net.bridge.bridge-nf-call-ip6tables", value: "1" }
+
+    - name: Install Kubernetes packages
+      apt:
+        update_cache: yes
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - kubelet
+          - kubeadm
+          - kubectl
+
+    - name: Enable kubelet service
+      systemd:
+        name: kubelet
+        enabled: yes
+        masked: no
+
+    - name: Start kubelet service
+      service:
+        name: kubelet
+        state: started
+```
+
+4. Run the Ansible playbook or role to configure the nodes:
+- Ensure that your Ansible inventory lists the IP addresses or hostnames of your bare metal nodes.
+- Run `ansible-playbook <playbook_name>.yml` to configure the nodes with Kubernetes dependencies.
+
+5. Initialize and join the cluster using kubeadm:
+- SSH into one of the nodes that will act as the control plane.
+- Run `kubeadm init` to initialize a new Kubernetes cluster.
+- Follow the instructions provided by kubeadm to set up the control plane and join the worker nodes to the cluster.
+
+After following these steps, you should have a Kubernetes cluster up and running on your bare metal nodes. You can then use tools like kubectl or Helm to manage and deploy your applications in the cluster.
