@@ -1,0 +1,27 @@
+To address the "PodDisruptionBudgetAtLimit" alert in OpenShift, you can use Pod Disruption Budget (PDB) to define policies for pod disruption and manage the number of pods that can be simultaneously unavailable in your cluster. Here's an example of how you can define a PDB in OpenShift using a YAML file:
+
+```yaml
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: my-pdb
+spec:
+  selector:
+    matchLabels:
+      app: my-app
+  maxUnavailable: 1
+```
+
+In this example, we define a PDB named "my-pdb" that applies to pods with the label "app: my-app". The `maxUnavailable` field is set to 1, which means that only one pod with the matching label can be unavailable at a time.
+
+You can apply this YAML file using the `oc apply` command:
+
+```shell
+oc apply -f my-pdb.yaml
+```
+
+By setting a specific value for `maxUnavailable`, you can control the number of pods that can be disrupted at a given time. Adjust this value according to your application's requirements.
+
+Note that PDBs rely on the Kubernetes Eviction API to determine which pods to evict during disruptions. Ensure that your OpenShift cluster supports this API for PDBs to function properly.
+
+Once the PDB is defined and applied, it will enforce the disruption budget and prevent more pods than the specified limit from being disrupted simultaneously, helping to mitigate the "PodDisruptionBudgetAtLimit" alert in OpenShift.
