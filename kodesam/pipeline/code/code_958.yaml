@@ -1,0 +1,55 @@
+Sure, here is an example of an Ansible script to create Docker secrets using the `docker_secret` module:
+
+
+---
+- name: Create Docker secrets
+  hosts: localhost
+  tasks:
+    - name: Create secret from file
+      docker_secret:
+        name: my_secret
+        data: /path/to/secret/file.txt
+
+    - name: Create secret from variable
+      docker_secret:
+        name: my_other_secret
+        data: "{{ my_variable }}"
+
+    - name: Create secret with specific label
+      docker_secret:
+        name: secret_with_label
+        data: /path/to/secret/file.txt
+        labels:
+          my_label: sample
+
+    - name: Create secret with file permissions
+      docker_secret:
+        name: secret_with_permissions
+        data: /path/to/secret/file.txt
+        file_mode: '0400'
+        directory_mode: '0500'
+
+    - name: Create secret with target reference
+      docker_secret:
+        name: secret_with_target
+        data: /path/to/secret/file.txt
+        target: /run/secrets/my_secret
+
+
+In this example:
+
+- The `docker_secret` module is used to create secrets.
+- The `name` parameter specifies the name of the secret.
+- The `data` parameter specifies the source of the secret data, which can be a file path or a variable.
+- The `labels` parameter (optional) allows you to add labels to the secret.
+- The `file_mode` parameter (optional) sets the file permissions of the secret file.
+- The `directory_mode` parameter (optional) sets the directory permissions of the secret folder.
+- The `target` parameter (optional) specifies a target reference for the secret.
+
+You can save this script in a file, for example, `create_secrets.yml`, and run it with the `ansible-playbook` command:
+
+bash
+ansible-playbook create_secrets.yml
+
+
+Make sure to replace the placeholders (`/path/to/secret/file.txt`, `my_variable`, etc.) with your actual values.
