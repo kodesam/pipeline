@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for i in {1..10}
+do
+    curl https://www.google.com
+done
+
+Make sure you have curl installed on your system before running this script.
