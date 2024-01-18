@@ -1,0 +1,15 @@
+#!/bin/bash
+
+for i in {1..10}
+do
+    curl -s http://yahoo.com
+done
+
+Save the script in a file, for example, `script.sh`, and then run it using the following command:
+
+```bash
+chmod +x script.sh
+./script.sh
+```
+
+This script will execute the `curl` command to retrieve the Yahoo homepage 10 times. The `-s` flag is used to prevent `curl` from showing progress output.
