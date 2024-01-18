@@ -1,0 +1,28 @@
+Sure, here's an example of an Ansible script that uses the `docker_container` module to get information about all running containers:
+
+
+- name: Get running containers
+  hosts: localhost
+  tasks:
+    - name: Get running containers
+      docker_container_info:
+        filters:
+          status: running
+      register: running_containers
+
+    - name: Print running container details
+      debug:
+        var: running_containers
+
+
+This script defines a playbook with one task. The task uses the `docker_container_info` module to get information about all running containers. The `filters` parameter is used to specify that we only want to retrieve information about containers with the status "running". The `register` parameter saves the output of the task into the `running_containers` variable.
+
+The second task uses the `debug` module to print out the details of the running containers. You can customize this task to process or use the `running_containers` variable as needed.
+
+To run this script, save it to a file (e.g., `get_running_containers.yml`) and execute the following command:
+
+shell
+ansible-playbook get_running_containers.yml
+
+
+Make sure you have Ansible and the Docker Python SDK installed on the machine running the script.
