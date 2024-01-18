@@ -1,0 +1,14 @@
+Here is a shell script that will execute the `curl` command to fetch data from the Yahoo homepage 10 times:
+
+```bash
+#!/bin/bash
+
+URL="https://www.yahoo.com"
+
+for ((i=1; i<=10; i++)); do
+    curl "$URL"
+done
+```
+
+Save the script to a file (e.g., `curl_script.sh`) and make it executable by running `chmod +x curl_script.sh` in the terminal. 
+Then you can run the script by executing `./curl_script.sh` in the terminal. It will perform the `curl` command to fetch data from the Yahoo homepage 10 times.
