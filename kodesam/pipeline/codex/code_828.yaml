@@ -1,0 +1,78 @@
+For creating a web application pod with namespace, deployment, configmap, service, and route in Kubernetes, you can use the following example YAML files:
+
+1. Namespace.yaml:
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-namespace
+```
+
+2. Deployment.yaml:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app-deployment
+  namespace: my-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - name: web-app
+        image: your-web-app-image
+        ports:
+        - containerPort: 80
+```
+
+3. ConfigMap.yaml:
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-app-config
+  namespace: my-namespace
+data:
+  my-config-key: my-config-value
+```
+
+4. Service.yaml:
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-app-service
+  namespace: my-namespace
+spec:
+  selector:
+    app: web-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+```
+
+5. Route.yaml (for OpenShift):
+```yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: web-app-route
+  namespace: my-namespace
+spec:
+  to:
+    kind: Service
+    name: web-app-service
+  port:
+    targetPort: 80
+  wildcardPolicy: None
+```
+
+You can apply these YAML files using the `kubectl apply -f <file_name>.yaml -n my-namespace` command to create the necessary resources in your Kubernetes cluster. Make sure to replace placeholders like `your-web-app-image` with the actual image name or other values specific to your application.
