@@ -1,0 +1,18 @@
+Here's a shell script that uses the `curl` command to send a request to a specific IP address 10 times:
+
+```bash
+#!/bin/bash
+
+IP_ADDRESS="XXX.XXX.XXX.XXX"
+
+for ((i=1; i<=10; i++))
+do
+    echo "Request $i:"
+    curl $IP_ADDRESS
+    echo ""
+done
+```
+
+Make sure to replace `XXX.XXX.XXX.XXX` with the actual IP address you want to send the request to. 
+
+Save the script in a file, e.g., `curl_ip.sh`, and make it executable using the command `chmod +x curl_ip.sh`. Then, you can run the script by executing `./curl_ip.sh` in the terminal.
