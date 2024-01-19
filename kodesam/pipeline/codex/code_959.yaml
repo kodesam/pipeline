@@ -1,0 +1,66 @@
+To test a mix of IPv4 and IPv6 for the control plane and user plane in a 4G network using Ansible, you can use the following playbook YAML example as a starting point:
+
+```yaml
+---
+- name: Test Mix of IPv4 and IPv6 in 4G Network
+  hosts: 4g_devices
+  gather_facts: false
+
+  tasks:
+    - name: Test Control Plane IPv4 Connectivity
+      ping:
+        dest: control_plane_ipv4_address
+        count: 3
+      register: control_plane_ipv4_ping_output
+
+    - name: Test Control Plane IPv6 Connectivity
+      ping6:
+        dest: control_plane_ipv6_address
+        count: 3
+      register: control_plane_ipv6_ping_output
+
+    - name: Test User Plane IPv4 Connectivity
+      ping:
+        dest: user_plane_ipv4_address
+        count: 3
+      register: user_plane_ipv4_ping_output
+
+    - name: Test User Plane IPv6 Connectivity
+      ping6:
+        dest: user_plane_ipv6_address
+        count: 3
+      register: user_plane_ipv6_ping_output
+
+    - name: Display Test Results
+      debug:
+        msg: |
+          Control Plane IPv4 Ping Results:
+          {{ control_plane_ipv4_ping_output.stdout }}
+          
+          Control Plane IPv6 Ping Results:
+          {{ control_plane_ipv6_ping_output.stdout }}
+          
+          User Plane IPv4 Ping Results:
+          {{ user_plane_ipv4_ping_output.stdout }}
+          
+          User Plane IPv6 Ping Results:
+          {{ user_plane_ipv6_ping_output.stdout }}
+```
+
+In this playbook example, we assume that you have a group of 4G devices specified in your inventory under the name `4g_devices`. Adjust this group name according to your inventory configuration.
+
+The playbook uses the `ping` and `ping6` modules to test connectivity to the control plane and user plane addresses for both IPv4 and IPv6. Adjust the `dest` parameter with the appropriate IPv4 and IPv6 addresses for your network.
+
+The `count` parameter in each ping task specifies the number of ICMP echo request packets to be sent.
+
+The playbook captures the output of each ping task into separate variables, such as `control_plane_ipv4_ping_output`, `control_plane_ipv6_ping_output`, `user_plane_ipv4_ping_output`, and `user_plane_ipv6_ping_output`.
+
+Finally, the playbook uses the `debug` module to display the ping results for each plane and address type.
+
+You can save this playbook in a YAML file, such as `test_ipv4_ipv6_connectivity.yaml`, and execute it using the `ansible-playbook` command:
+
+```shell
+ansible-playbook test_ipv4_ipv6_connectivity.yaml
+```
+
+Make sure to adjust the playbook parameters, such as the group name in the inventory and the control plane/user plane IPv4/IPv6 addresses, according to your specific 4G network configuration.
