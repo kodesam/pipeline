@@ -1,0 +1,36 @@
+Sure, here is a sample Ansible playbook that uses the `docker_container` module to create an Nginx container:
+
+
+---
+- name: Create Nginx container with Ansible
+  hosts: localhost
+  become: true
+
+  tasks:
+    - name: Pull Nginx image
+      docker_image:
+        name: nginx
+        state: present
+
+    - name: Create Nginx container
+      docker_container:
+        name: my_nginx_container
+        image: nginx
+        state: started
+        ports:
+          - "80:80"
+
+
+Here's how you can customize and use this playbook:
+
+1. Make sure you have Ansible and Docker installed on your machine.
+2. Create a new `.yaml` file (e.g., `create_nginx_container.yaml`) and copy the playbook code into it.
+3. Modify the playbook as needed. By default, it creates an Nginx container with the name "my_nginx_container". You can change the name, the image, and the ports mapping to suit your requirements.
+4. Open the terminal and navigate to the directory where the playbook file is located.
+5. Run the playbook using the following command:
+
+   
+   ansible-playbook create_nginx_container.yaml
+   
+
+Ansible will then execute the playbook and create the Nginx container based on the specified configuration.
