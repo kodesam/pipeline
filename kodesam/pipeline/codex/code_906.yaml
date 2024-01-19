@@ -1,0 +1,42 @@
+To write a test case script to check the SDWAN router interface status using Ansible, you can use the following YAML playbook example as a starting point:
+
+```yaml
+---
+- name: Check SDWAN Router Interface Status Test
+  hosts: sdwan_devices
+  gather_facts: false
+
+  tasks:
+    - name: Get Interface Status
+      ios_command:
+        commands:
+          - show interface status
+
+      register: interface_status_output
+
+    - name: Assert Interface Status
+      assert:
+        that:
+          - "'Interface' in interface_status_output.stdout"
+        fail_msg: "Interface status not found."
+
+    - name: Debug Interface Status
+      debug:
+        var: interface_status_output.stdout
+```
+
+In this playbook, we assume that you have a group of SDWAN routers specified in your inventory under the name `sdwan_devices`. Adjust this group name according to your inventory configuration.
+
+The playbook executes the `show interface status` command on the SDWAN routers using the `ios_command` module. The output of the command is captured in the `interface_status_output` variable.
+
+The `assert` module is used to check whether the string `'Interface'` is present in the output. If the string is not found, the assertion fails and an error message is displayed.
+
+Finally, the playbook uses the `debug` module to print the interface status output (stdout) for further analysis or troubleshooting if needed.
+
+You can save this playbook in a YAML file, such as `check_interface_status_test.yaml`, and execute it using the `ansible-playbook` command:
+
+```shell
+ansible-playbook check_interface_status_test.yaml
+```
+
+Make sure to adjust the playbook parameters, such as the group name in the inventory, according to your specific SDWAN router configuration and commands.
