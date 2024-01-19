@@ -1,0 +1,34 @@
+To check the interface status for SDWAN using an Ansible playbook, you can use the following YAML playbook example:
+
+```yaml
+---
+- name: Check SDWAN Interface Status
+  hosts: sdwan_devices
+  gather_facts: false
+
+  tasks:
+    - name: Get Interface Status
+      ios_command:
+        commands:
+          - show interface status
+
+      register: interface_status_output
+
+    - name: Display Interface Status
+      debug:
+        var: interface_status_output.stdout_lines
+```
+
+In this playbook example, we are assuming that you have a group of SDWAN devices specified in your inventory under the name `sdwan_devices`. Adjust this group name as per your inventory configuration.
+
+The playbook uses the `ios_command` module to execute the `show interface status` command on the SDWAN devices. This command will retrieve the current interface status information.
+
+The output of the command is captured into the variable `interface_status_output` using the `register` keyword. This variable can then be used to display the interface status using the `debug` module.
+
+You can save this playbook in a YAML file, for example, `check_interface_status.yaml`, and then execute it using the `ansible-playbook` command:
+
+```shell
+ansible-playbook check_interface_status.yaml
+```
+
+Ensure that you have the necessary Ansible modules and connectivity to the SDWAN devices in your inventory. Adjust the playbook parameters according to your specific SDWAN device configuration and commands.
