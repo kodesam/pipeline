@@ -1,0 +1,15 @@
+Certainly! Here's a shell script that will execute the `curl` command to fetch an IP address (replace `XXX.XXX.XXX.XXX` with the actual IP address) 10 times:
+
+```bash
+#!/bin/bash
+
+IP_ADDRESS="XXX.XXX.XXX.XXX"
+
+for ((i=1; i<=10; i++))
+do
+    curl "$IP_ADDRESS"
+    echo "Request $i completed"
+done
+```
+
+Save the above script in a file (e.g., `run_curl_ip.sh`), make it executable by running `chmod +x run_curl_ip.sh`, and then execute it with `./run_curl_ip.sh`. This will run the `curl` command 10 times, fetching the specified IP address and displaying the completion status of each request.
