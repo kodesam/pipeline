@@ -1,0 +1,30 @@
+To play an Openheimer movie using an Ansible playbook, you can use the following YAML playbook example:
+
+```yaml
+---
+- name: Play Openheimer Movie
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Download Openheimer Movie
+      command: >
+        wget http://example.com/openheimer_movie.mp4
+        creates=/path/to/openheimer_movie.mp4
+
+    - name: Play Openheimer Movie
+      command: >
+        vlc /path/to/openheimer_movie.mp4
+```
+
+In this playbook example, the movie is being downloaded using the `wget` command from a given URL, and the `creates` parameter ensures that the download is skipped if the movie file already exists in the specified path.
+
+After the movie is downloaded, the `vlc` command is used to play the movie using the VLC media player. Ensure that VLC is installed on the system where the playbook is being executed.
+
+You can save this playbook in a YAML file, for example, `play_openheimer_movie.yaml`, and then execute it using the `ansible-playbook` command:
+
+```shell
+ansible-playbook play_openheimer_movie.yaml
+```
+
+Make sure to replace the URL for the movie and the path to the movie file with the actual values for your scenario
