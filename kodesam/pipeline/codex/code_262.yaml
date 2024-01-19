@@ -1,0 +1,32 @@
+Certainly! Here's an example Ansible script that uses the `bigip_device_info` module to collect information from F5 BIG-IP devices and create a task to retrieve the device IP:
+
+
+---
+- name: Collect information from F5 BIG-IP devices
+  hosts: all
+  gather_facts: False  # Skip gathering facts for better performance
+
+  tasks:
+    - name: Collect device info
+      bigip_device_info:
+        provider:
+          server: "{{ inventory_hostname }}"
+          user: "admin"
+          password: "your_password"
+          server_port: 443
+          validate_certs: no  # Set to "yes" if you want to validate SSL certificates
+
+      register: device_info
+
+    - name: Get device IP
+      debug:
+        msg: "Device IP: {{ device_info.management_address }}"
+
+
+In this script, we first define a playbook that will execute on all hosts defined in the inventory. The `gather_facts` parameter is set to `False` to improve performance since we don't need to gather all facts.
+
+The first task uses the `bigip_device_info` module to collect information from the F5 BIG-IP devices. The module requires the connection details such as the server address, username, password, and server port. The `register` keyword saves the output of the `bigip_device_info` module to the `device_info` variable.
+
+The second task uses the `debug` module to print the device IP address, which can be accessed using `{{ device_info.management_address }}`.
+
+Make sure to replace `"admin"` with your actual username, `"your_password"` with your actual password, and adjust any other connection parameters as needed.
