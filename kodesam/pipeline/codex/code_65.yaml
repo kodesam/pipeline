@@ -1,0 +1,16 @@
+Here is a shell script that uses the curl command to send a GET request to a specified IP address 200 times:
+
+```bash
+#!/bin/bash
+
+# Define the IP address
+IP_ADDRESS="XXX.XXX.XXX.XXX"
+
+# Loop 200 times
+for i in {1..200}; do
+    # Send a GET request to the IP address using curl
+    curl "$IP_ADDRESS"
+done
+```
+
+Please replace `XXX.XXX.XXX.XXX` with the actual IP address you want to send the request to. Save the script with a `.sh` extension (e.g., `script.sh`) and execute it in a terminal to run the script.
