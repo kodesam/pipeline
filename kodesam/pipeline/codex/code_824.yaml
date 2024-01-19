@@ -1,0 +1,47 @@
+Sure! Here's an example of an Ansible script that uses the `azure_rm_keyvault` module to create and store a key in an Azure Key Vault instance:
+
+
+---
+- name: Create and store a key in Azure Key Vault
+  hosts: localhost
+  tasks:
+    - name: Create Azure Key Vault
+      azure_rm_keyvault:
+        name: example-keyvault
+        resource_group: example-resource-group
+        location: eastus
+        state: present
+        tags:
+          environment: prod
+
+    - name: Create key in Azure Key Vault
+      azure_rm_keyvault_key:
+        vault_url: https://example-keyvault.vault.azure.net/
+        name: example-key
+        attributes:
+          disabled: false
+          expires: "2022-12-31T23:59:59.000Z"
+          not_before: "2021-01-01T00:00:00.000Z"
+        tags:
+          owner: john.doe@example.com
+        state: present
+        secret_attributes:
+          enabled: true
+          expires: "2022-12-31T23:59:59.000Z"
+          not_before: "2021-01-01T00:00:00.000Z"
+        secret_mode: key
+
+    - name: Display key value
+      debug:
+        var: result.secret
+
+
+In this example, the script performs the following tasks:
+
+1. Creates an Azure Key Vault instance using the `azure_rm_keyvault` module.
+2. Creates a key within the Key Vault using the `azure_rm_keyvault_key` module. The `vault_url` parameter should be the URL of the Key Vault instance you created in the previous step.
+3. Displays the value (secret) of the key using the `debug` module. The `result.secret` variable contains the key value.
+
+You'll need to replace the values for `name`, `resource_group`, `location`, and `vault_url` with your own values. You can also customize the attributes, tags, and secret attributes of the key as needed.
+
+Make sure you have the Azure modules installed (`pip install 'ansible[azure]'`) and that you have the appropriate Azure credentials set up to access your Azure subscription before running this script.
