@@ -1,0 +1,36 @@
+To check the "Running" status of 5GC CNF (Cloud Native Function) pods including AMF, AUSF, NRF, NSSF, PCF, SMF, UDM, UDR, UPF, DB, and WebUI, you can use the following YAML playbook as an example:
+
+```yaml
+---
+- name: Check 5GC CNF PODs Status
+  hosts: kubernetes_master
+  gather_facts: false
+
+  tasks:
+    - name: Get PODs Status
+      shell: |
+        kubectl get pods -n <namespace> \
+        -l app=<app_label> \
+        -o jsonpath="{range .items[*]}{.metadata.name}{'\t'}{.status.phase}{'\n'}{end}"
+      register: pod_status_output
+
+    - name: Debug PODs Status
+      debug:
+        var: pod_status_output.stdout_lines
+```
+
+In this playbook example, we assume that you have a Kubernetes cluster and have the necessary credentials and connectivity to the Kubernetes master node. Adjust the `hosts` parameter to the hostname or IP address of your Kubernetes master node.
+
+The playbook retrieves the pod status for the specified 5GC CNF pods using the `kubectl get pods` command. Adjust the namespace and app labels as per your deployment configuration.
+
+The output of the command is captured in the `pod_status_output` variable using the `register` keyword.
+
+Finally, the playbook uses the `debug` module to display the pod status output for further analysis or troubleshooting.
+
+You can save this playbook in a YAML file, for example, `check_5gc_cnf_pods_status.yaml`, and execute it using the `ansible-playbook` command:
+
+```shell
+ansible-playbook check_5gc_cnf_pods_status.yaml
+```
+
+Make sure to adjust the playbook parameters, such as the namespace and app labels, according to your specific 5GC CNF deployment configuration.
