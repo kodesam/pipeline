@@ -1,0 +1,34 @@
+To play an Openheimer movie using the Azure Key Vault instance module in Ansible, you will need to have the Openheimer movie saved as a secret in your Azure Key Vault. Here's an example of how you can do it:
+
+
+---
+- name: Play Openheimer Movie
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Get Azure Key Vault Secret
+      azure_rm_keyvault_secret_info:
+        resource_group: <your_resource_group_name>
+        vault_name: <your_key_vault_name>
+        secret_name: <your_movie_secret_name>
+        client_id: <your_azure_client_id>
+        client_secret: <your_azure_client_secret>
+        tenant: <your_azure_tenant_id>
+      register: movie_secret
+
+    - name: Save Movie Secret File
+      copy:
+        content: "{{ movie_secret.value }}"
+        dest: /tmp/openheimer_movie.mov
+      when: movie_secret.changed
+
+    - name: Play Openheimer Movie
+      shell: open /tmp/openheimer_movie.mov
+      args:
+        executable: /Applications/VLC.app/Contents/MacOS/VLC   # Replace with the appropriate path to your media player
+
+
+Make sure to replace the placeholders `<your_resource_group_name>`, `<your_key_vault_name>`, `<your_movie_secret_name>`, `<your_azure_client_id>`, `<your_azure_client_secret>`, `<your_azure_tenant_id>`, and `/Applications/VLC.app/Contents/MacOS/VLC` with the relevant values for your Azure Key Vault, movie secret, Azure credentials, and media player.
+
+This script fetches the secret value of the Openheimer movie from the Azure Key Vault, saves it as a file on the local machine (/tmp/openheimer_movie.mov), and then plays it using the VLC media player.
