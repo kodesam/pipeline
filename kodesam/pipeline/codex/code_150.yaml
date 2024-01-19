@@ -1,0 +1,13 @@
+You can use a shell script to repeat a curl command 10 times. Here's an example:
+
+```bash
+#!/bin/bash
+
+for ((i=1; i<=10; i++))
+do
+    curl -s https://www.example.com > output$i.html
+    echo "Curl $i completed"
+done
+```
+
+This script will execute the curl command 10 times and save the output in separate files, with the filename having a numerical suffix. Modify the curl command and the filename format according to your needs.
