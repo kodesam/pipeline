@@ -1,0 +1,27 @@
+Certainly! Here's an example Ansible script that uses the `docker_image` module to manage Docker images and creates a GitOps image:
+
+
+---
+- name: Create GitOps Docker Image
+  hosts: localhost
+  gather_facts: false
+  
+  tasks:
+    - name: Install Docker SDK for Python
+      pip:
+        name: docker
+        state: present
+
+    - name: Create GitOps Docker Image
+      docker_image:
+        name: your-registry/gitops-app
+        tag: latest
+        build:
+          path: /path/to/gitops-app
+          dockerfile: /path/to/gitops-app/Dockerfile
+        state: present
+
+
+Make sure to replace `/path/to/gitops-app` with the actual path to your GitOps application code, and `/path/to/gitops-app/Dockerfile` with the path to your Dockerfile for building the image.
+
+You can run this playbook with the command `ansible-playbook create_gitops_image.yml`, assuming you have Ansible installed and configured properly.
