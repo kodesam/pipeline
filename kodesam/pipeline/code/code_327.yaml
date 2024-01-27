@@ -1,0 +1,23 @@
+Sure! Below is an example of an Ansible playbook that uses the `docker_container_copy_into` module to copy a file from the host to a Docker container.
+
+
+---
+- name: Copy file to Docker container
+  hosts: all
+  become: true
+  tasks:
+    - name: Create Docker container
+      docker_container:
+        name: my_container
+        image: ubuntu:latest
+        state: started
+        detach: yes
+
+    - name: Copy file to Docker container
+      docker_container_copy_into:
+        src: /path/to/source/file.txt
+        dest: /path/inside/container/file.txt
+        container: my_container
+
+
+In the playbook above, the `docker_container` module is used to create a Docker container named "my_container" using the Ubuntu image. We then specify the `docker_container_copy_into` task to copy the file located at `/path/to/source/file.txt` on the Ansible host to `/path/inside/container/file.txt` inside the Docker container "my_container".
