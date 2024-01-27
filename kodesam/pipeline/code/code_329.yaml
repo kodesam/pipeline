@@ -1,0 +1,66 @@
+Certainly! Here's an example Ansible playbook that utilizes the Terraform Kubernetes Engine (TFKE) module to create a master and worker node in a Kubernetes cluster:
+
+
+---
+- name: Provision GKE cluster
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  environment:
+    GOOGLE_APPLICATION_CREDENTIALS: "{{ gcp_credentials_path }}"
+    GOOGLE_PROJECT: "{{ gcp_project }}"
+    GOOGLE_REGION: "{{ gcp_region }}"
+  
+  tasks:
+    - name: Install Terraform
+      raw: |-
+        command -v terraform >/dev/null || { curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository ---yes "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt-get -qq update && sudo apt-get -qq install terraform ; }
+
+    - name: Create Terraform configuration file
+      template:
+        src: gke-cluster.tf.j2
+        dest: gke-cluster.tf
+        mode: 0755
+
+    - name: Run Terraform init
+      command: terraform init
+
+    - name: Run Terraform apply
+      command: terraform apply -auto-approve
+
+    - name: Fetch the generated kubeconfig file
+      fetch:
+        src: "{{ gcp_cluster_name }}.kubeconfig"
+        dest: "~/.kube/config"
+        flat: yes
+
+    - name: Set KUBECONFIG environment variable
+      shell: echo "export KUBECONFIG=~/.kube/config" >> ~/.bashrc && source ~/.bashrc
+
+
+In the above playbook, we first install Terraform using a raw Ansible task. Then, we create a Terraform configuration file from a template. This template (`gke-cluster.tf.j2`) should contain the necessary configuration for the GKE cluster, for example:
+
+hcl
+module "gke_cluster" {
+  source            = "terraform-google-modules/kubernetes-engine/google"
+  version           = "v15.1.0"
+  project_id        = "${var.project_id}"
+  name              = "${var.cluster_name}"
+  region            = "${var.region}"
+  machine_type      = "${var.machine_type}"
+  node_count        = "${var.node_count}"
+  network           = "${var.network}"
+  subnetwork        = "${var.subnetwork}"
+  cluster_ipv4_cidr = "${var.cluster_ipv4_cidr}"
+}
+
+
+Make sure to fill in the variables like `project_id`, `cluster_name`, `region`, `machine_type`, `node_count`, `network`, `subnetwork`, `cluster_ipv4_cidr` with appropriate values.
+
+After initializing Terraform and applying the configuration, we fetch the generated kubeconfig file and set the `KUBECONFIG` environment variable to make `kubectl` usable.
+
+Remember to replace `{{ gcp_credentials_path }}`, `{{ gcp_project }}`, `{{ gcp_region }}`, and `{{ gcp_cluster_name }}` with the actual values in your ansible.cfg or in the inventory file. You can also provide these values as variables in the Ansible playbook itself.
+
+I hope this helps you get started with creating a GKE cluster using TFKE module using Ansible! Let me know if you have any questions.
