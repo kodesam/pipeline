@@ -1,0 +1,32 @@
+Sure! Here's an example of an Ansible playbook that uses the docker_container_info module to retrieve facts about running containers:
+
+
+---
+- name: Retrieve facts about running containers
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Get container facts
+      docker_container_info:
+        filters:
+          status: running
+        format: json
+      register: container_info
+
+    - name: Display container facts
+      debug:
+        var: container_info.containers
+
+
+In this playbook, we have a single task that uses the `docker_container_info` module. We specify the filter to retrieve only running containers using the `status` attribute. We also set the format to JSON to easily parse the results.
+
+The output of the module will be stored in the `container_info` variable, which we then display using the `debug` module.
+
+You can run this playbook using the `ansible-playbook` command:
+
+
+ansible-playbook retrieve_container_facts.yaml
+
+
+This will display the facts about all the running containers on the localhost.
