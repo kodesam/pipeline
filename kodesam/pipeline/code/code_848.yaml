@@ -1,0 +1,21 @@
+Sure! Here is an example of an Ansible playbook that uses the `add_host` module to add a host (or group) to the in-memory inventory and then prints a link to the Openheimer movie:
+
+
+---
+- name: Add host to inventory and print movie link
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Add host to inventory
+      add_host:
+        name: my_host
+        groups: my_group
+
+    - name: Print movie link
+      debug:
+        msg: "Link to Openheimer movie: https://www.example.com/openheimer-movie"
+
+
+In this example playbook, the `add_host` module is used to add a host named `my_host` and assign it to the group `my_group`. You can replace `my_host` and `my_group` with the desired host and group names.
+
+The `debug` module is then used to print a message with the link to the Openheimer movie. Replace the URL `https://www.example.com/openheimer-movie` with the actual link to the movie.
