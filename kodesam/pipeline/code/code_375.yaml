@@ -1,0 +1,128 @@
+Certainly! Here's an example Ansible script that uses the k8s module to launch EC2 instances on AWS and creates a WordPress and MySQL deployment on separate slave nodes:
+
+
+---
+- name: Deploy WordPress on Kubernetes using Ansible
+  hosts: localhost
+  gather_facts: false
+  vars:
+    aws_region: us-west-2
+    master_node_count: 1
+    slave_node_count: 2
+    ec2_instance_type: t2.micro
+    ec2_ami: ami-0c94855ba95c71c99
+  tasks:
+    - name: Provision EC2 instances for master and slave nodes
+      ec2_instance:
+        region: "{{ aws_region }}"
+        state: present
+        image: "{{ ec2_ami }}"
+        instance_type: "{{ ec2_instance_type }}"
+        count: "{{ master_node_count }}"
+        vpc_subnet_id: your_vpc_subnet_id
+        key_name: your_aws_key_pair_name
+        assign_public_ip: yes
+        wait: true
+        register: ec2_masters
+
+    - debug:
+        var: ec2_masters
+
+    - name: Provision EC2 instances for slave nodes
+      ec2_instance:
+        region: "{{ aws_region }}"
+        state: present
+        image: "{{ ec2_ami }}"
+        instance_type: "{{ ec2_instance_type }}"
+        count: "{{ slave_node_count }}"
+        vpc_subnet_id: your_vpc_subnet_id
+        key_name: your_aws_key_pair_name
+        assign_public_ip: yes
+        wait: true
+        register: ec2_slaves
+
+    - debug:
+        var: ec2_slaves
+
+    - name: Configure master node
+      hosts: ec2_masters.instances
+      roles:
+        - master
+
+    - name: Configure slave nodes
+      hosts: ec2_slaves.instances
+      roles:
+        - slave
+
+- import_playbook: ./roles/master/tasks/main.yml
+- import_playbook: ./roles/slave/tasks/main.yml
+
+
+Note: You will need to create the necessary roles and tasks for the master and slave nodes separately.
+
+Inside the `roles/master` directory, create a `tasks/main.yml` file with the following contents:
+
+
+---
+- name: Connect to master node(s)
+  k8s:
+    api_version: v1
+    host: your_master_node_ip:6443
+    username: your_username
+    password: your_password
+    validate_certs: False
+    state: present
+  register: k8s_master_connection
+
+- debug:
+    var: k8s_master_connection
+
+
+Inside the `roles/slave` directory, create a `tasks/main.yml` file with the following contents:
+
+
+---
+- name: Connect to slave node(s)
+  k8s:
+    api_version: v1
+    host: your_slave_node_ip:6443
+    username: your_username
+    password: your_password
+    validate_certs: False
+    state: present
+  register: k8s_slave_connection
+
+- debug:
+    var: k8s_slave_connection
+
+- name: Create MySQL deployment
+  k8s:
+    api_version: apps/v1
+    kind: Deployment
+    name: mysql
+    namespace: default
+    definition:
+      metadata:
+        labels:
+          app: mysql
+      spec:
+        selector:
+          matchLabels:
+            app: mysql
+        replicas: 1
+        template:
+          metadata:
+            labels:
+              app: mysql
+          spec:
+            containers:
+              - name: mysql
+                image: mysql:5.7
+                env:
+                  - name: MYSQL_ROOT_PASSWORD
+                    value: your_mysql_root_password
+                ports:
+                  - containerPort: 3306
+
+
+I hope this helps you get started with deploying WordPress and MySQL on Kubernetes using Ansible! Let me know if you have any further questions.
