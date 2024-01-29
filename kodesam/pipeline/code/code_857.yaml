@@ -1,0 +1,137 @@
+Sure! Here's an example of an Ansible script that you can use to launch EC2 instances on AWS Cloud and configure master and slave nodes separately:
+
+1. Create a file named `launch_ec2_instances.yml` and add the following code:
+
+
+---
+- name: Launch EC2 Instances
+  hosts: localhost
+  gather_facts: False
+
+  vars:
+    aws_access_key: <your AWS access key>
+    aws_secret_key: <your AWS secret key>
+    security_group: <your security group>
+    key_name: <your key pair name>
+    image_id: <your AMI ID>
+    instance_type: <your instance type>
+    region: <your AWS region>
+    count: 2
+
+  tasks:
+    - name: Launch EC2 Instances
+      ec2:
+        instance_type: "{{ instance_type }}"
+        image: "{{ image_id }}"
+        wait: true
+        region: "{{ region }}"
+        count_tag:
+          Name: "{{ item.name }}"
+        instance_tags:
+          Name: "{{ item.name }}"
+        key_name: "{{ key_name }}"
+        group: "{{ security_group }}"
+        vpc_subnet_id: "{{ item.subnet }}"
+        assign_public_ip: yes
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+      with_items:
+        - { name: "master-node", subnet: "<your master subnet>" }
+        - { name: "slave-node", subnet: "<your slave subnet>" }
+
+
+Replace the variables (`<your AWS access key>`, `<your AWS secret key>`, `<your security group>`, `<your key pair name>`, `<your AMI ID>`, `<your instance type>`, `<your AWS region>`, `<your master subnet>`, and `<your slave subnet>`) with your specific values.
+
+2. Create a directory named `roles` and change to that directory.
+
+3. Create a role for configuring the master node by running the following command:
+
+bash
+ansible-galaxy init master-node
+
+
+4. Create a role for configuring the slave node by running the following command:
+
+bash
+ansible-galaxy init slave-node
+
+
+5. Change to the `master-node` role directory and edit the `tasks/main.yml` file. Add the configuration tasks specific to the master node. For example:
+
+
+---
+- name: Install software dependencies for master node
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - httpd
+    - php
+    - mysql
+    - php-mysql
+
+- name: Start Apache HTTPD service
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+
+6. Change to the `slave-node` role directory and edit the `tasks/main.yml` file. Add the configuration tasks specific to the slave node. For example:
+
+
+---
+- name: Install software dependencies for slave node
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - httpd
+    - php
+    - mysql
+    - php-mysql
+
+- name: Start Apache HTTPD service
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: Install wordpress and configure database connection
+  shell: |
+    wget https://wordpress.org/latest.tar.gz -P /var/www/html/
+    tar -xzf /var/www/html/latest.tar.gz -C /var/www/html/
+    mv /var/www/html/wordpress/* /var/www/html/
+    rm -rf /var/www/html/latest.tar.gz /var/www/html/wordpress
+    sed -i 's/database_name_here/wordpress/g' /var/www/html/wp-config-sample.php
+    sed -i 's/username_here/root/g' /var/www/html/wp-config-sample.php
+    sed -i 's/password_here/yourpassword/g' /var/www/html/wp-config-sample.php
+    cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+
+
+Note: Please replace `yourpassword` in the last task with your desired password.
+
+7. Now, in the `launch_ec2_instances.yml` file add these two roles to configure the master and slave nodes respectively. Modify the task section of the file as follows:
+
+
+tasks:
+  - include_role:
+      name: master-node
+    when: "'master-node' in item.instance_tags.Name"
+    with_items: "{{ ec2_instances.instances }}"
+
+  - include_role:
+      name: slave-node
+    when: "'slave-node' in item.instance_tags.Name"
+    with_items: "{{ ec2_instances.instances }}"
+
+
+8. Run the ansible playbook with the following command:
+
+bash
+ansible-playbook launch_ec2_instances.yml
+
+
+This will launch two EC2 instances on AWS Cloud with specified configurations and configure the master and slave nodes separately.
+
+Note: Make sure you have Ansible and the `boto3` and `botocore` Python libraries installed before running this playbook.
