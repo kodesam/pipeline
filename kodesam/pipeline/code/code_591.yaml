@@ -1,0 +1,77 @@
+To launch EC2 instances on AWS using Ansible and configure the nodes separately, you can follow these steps:
+
+Step 1: Install Ansible on your control node
+Install Ansible on your control node using the package manager for your operating system or using pip.
+
+Step 2: Configure AWS credentials
+Configure your AWS access and secret keys as environment variables or set them in `~/.aws/credentials` file.
+
+Step 3: Create an Ansible playbook to launch EC2 instances
+Create a playbook named `launch_ec2_instances.yml` and use the `ec2` module to launch instances. Configure the `instance_type`, `region`, `image` and other required parameters as per your environment.
+
+
+- name: Launch EC2 instances
+  hosts: localhost
+  gather_facts: False
+  tasks:
+    - name: Create master and slave instances
+      ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        key_name: "{{ key_pair_name }}"
+        region: "{{ ec2_region }}"
+        image: "{{ ec2_image }}"
+        instance_type: "{{ instance_type }}"
+        instance_tags:
+          Name: "{{ item }}-instance"
+        count: "{{ count }}"
+      loop:
+        - master
+        - slave
+      register: ec2_instances
+    - name: Wait for SSH to become available
+      wait_for:
+        host: "{{ item.public_ip }}"
+        port: 22
+        state: started
+      loop: "{{ ec2_instances.results }}"
+      when: item.changed
+
+
+Step 4: Create roles for master and slave nodes
+Create separate roles for master and slave nodes. Under the `roles` directory, create `master` and `slave` subdirectories with the required tasks, templates, and variables.
+
+For example, the master role can have tasks to install and configure Wordpress, and the slave role can have tasks to install and configure MySQL.
+
+Step 5: Configure the instances using roles
+Update the playbook `launch_ec2_instances.yml` to configure the instances using the respective roles.
+
+
+- name: Launch EC2 instances
+  hosts: localhost
+  gather_facts: False
+  tasks:
+    - name: Create master and slave instances
+      ec2:
+      ...
+
+- name: Configure master and slave instances
+  hosts: master, slave
+  vars:
+    master_instance: "{{ ec2_instances.results | selectattr('item', 'search', 'master') | map(attribute='instances') | list | flatten }}"
+    slave_instance: "{{ ec2_instances.results | selectattr('item', 'search', 'slave') | map(attribute='instances') | list | flatten }}"
+  roles:
+    - master
+    - slave
+
+
+Step 6: Run the playbook
+Run the playbook using the `ansible-playbook` command.
+
+
+ansible-playbook -i inventory.ini launch_ec2_instances.yml
+
+
+Make sure to update the variables in the playbook and role tasks/files as per your requirements.
+
+Note: Replace `inventory.ini` with your inventory file containing the generated EC2 instances' public IP addresses.
