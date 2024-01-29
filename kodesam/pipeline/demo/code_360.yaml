@@ -1,0 +1,26 @@
+Certainly! Here's a shell script that uses the `curl` command to ping `cognizant.com` 10 times in a month and saves the output to a file named `ping_output` in the `/tmp` folder.
+
+```bash
+#!/bin/bash
+
+# Get the current month and year
+current_month=$(date +%m)
+current_year=$(date +%Y)
+
+# Create the output file path
+output_file="/tmp/ping_output_${current_month}_${current_year}.txt"
+
+# Loop 10 times to ping cognizant.com
+for (( i=1; i<=10; i++ )); do
+    # Perform the curl request and append the output to the file
+    curl -s -o /dev/null -w "Date: %{date_nstime}\nHTTP code: %{http_code}\n\n" https://www.cognizant.com >> "$output_file"
+done
+
+echo "Ping results saved to $output_file"
+```
+
+Save the above script to a file, for example, `ping_cognizant.sh`. Then, make the script executable by running `chmod +x ping_cognizant.sh`. Finally, execute the script by running `./ping_cognizant.sh`.
+
+The script will ping `cognizant.com` 10 times, appending the date and HTTP code of each request to the `ping_output_<month>_<year>.txt` file in the `/tmp` folder. For example, if the current month is `02` and the current year is `2022`, the output file will be `ping_output_02_2022.txt`.
+
+Please note that the script uses the `-s` flag for silent mode, so it won't display the output of each request on the console. If you want to see the output as well, you can remove the `-s` flag from the `curl` command.
