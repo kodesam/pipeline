@@ -1,0 +1,214 @@
+Sure! Here's an example of an Ansible script that uses the EC2 module to launch EC2 instances on AWS Cloud and configure OpenShift master and worker nodes, create WordPress and MySQL pods, and services to connect them.
+
+1. Create an inventory file named `hosts` with the following content:
+
+
+[master-nodes]
+master-node1
+master-node2
+
+[worker-nodes]
+worker-node1
+worker-node2
+
+
+2. Create a playbook named `launch_ec2_instances.yml` with the following content:
+
+
+---
+- name: Launch EC2 Instances
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - aws_vars.yml
+
+  tasks:
+    - name: Launch EC2 Instances
+      ec2:
+        region: "{{ aws_region }}"
+        key_name: "{{ aws_keyname }}"
+        instance_type: "{{ aws_instance_type }}"
+        image: "{{ aws_ami }}"
+        wait: true
+        group: "{{ aws_security_group }}"
+        instance_tags:
+          Name: "{{ item.value }}"
+          Environment: "{{ aws_env }}"
+      with_dict: "{{ ec2_instances }}"
+      register: ec2_instances_result
+
+    - name: Add EC2 instances to inventory groups
+      add_host:
+        name: "{{ item.value.public_ip }}"
+        groups: "{{ item.key }}"
+        ansible_user: "{{ aws_ansible_user }}"
+        ansible_ssh_private_key_file: "{{ aws_private_key_path }}"
+      with_dict: "{{ ec2_instances }}"
+
+
+3. Create a roles directory and within it, create a directory named `openshift-config` to configure OpenShift master and worker nodes. Place the playbook for master node configuration into a file named `master-config.yml` with the following content:
+
+
+---
+- name: Configure OpenShift Master Node
+  hosts: master-nodes
+  become: true
+
+  tasks:
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+
+    - name: Start Docker Service
+      service:
+        name: docker
+        state: started
+
+    # Other master node configuration tasks go here...
+
+
+Similarly, create a playbook for worker node configuration in a file named `worker-config.yml` within the `openshift-config` directory:
+
+
+---
+- name: Configure OpenShift Worker Node
+  hosts: worker-nodes
+  become: true
+
+  tasks:
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+
+    - name: Start Docker Service
+      service:
+        name: docker
+        state: started
+
+    # Other worker node configuration tasks go here...
+
+
+4. Create a directory named `openshift-app` to deploy WordPress and MySQL pods. Place the playbook for deploying WordPress and MySQL pods into a file named `deploy-app.yml` with the following content:
+
+
+---
+- name: Deploy WordPress and MySQL Pods
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - openshift_vars.yml
+
+  tasks:
+    - name: Login to OpenShift Cluster
+      openshift_login:
+        username: "{{ openshift_username }}"
+        password: "{{ openshift_password }}"
+        host: "{{ openshift_host }}"
+        validate_certs: no
+
+    - name: Create WordPress Pod
+      k8s:
+        api_version: v1
+        kind: Pod
+        name: wordpress-pod
+        definition:
+          metadata:
+            labels:
+              app: wordpress
+          spec:
+            containers:
+              - name: wordpress
+                image: wordpress:latest
+                ports:
+                  - containerPort: 80
+
+    - name: Create MySQL Pod
+      k8s:
+        api_version: v1
+        kind: Pod
+        name: mysql-pod
+        definition:
+          metadata:
+            labels:
+              app: mysql
+          spec:
+            containers:
+              - name: mysql
+                image: mysql:latest
+                env:
+                  - name: MYSQL_ROOT_PASSWORD
+                    value: "{{ mysql_root_password }}"
+                ports:
+                  - containerPort: 3306
+
+    - name: Create Service for WordPress Pod
+      k8s:
+        api_version: v1
+        kind: Service
+        name: wordpress-service
+        definition:
+          metadata:
+            labels:
+              app: wordpress
+          spec:
+            ports:
+              - name: http
+                port: 80
+            selector:
+              app: wordpress
+
+    - name: Create Service for MySQL Pod
+      k8s:
+        api_version: v1
+        kind: Service
+        name: mysql-service
+        definition:
+          metadata:
+            labels:
+              app: mysql
+          spec:
+            ports:
+              - name: mysql
+                port: 3306
+            selector:
+              app: mysql
+
+
+5. Create a vars file named `aws_vars.yml` with the following content:
+
+
+aws_region: us-west-2
+aws_keyname: my-key
+aws_instance_type: t2.micro
+aws_ami: ami-0c94855ba95c71c99
+aws_security_group: my-security-group
+aws_env: prod
+
+ec2_instances:
+  master-node1: OpenShift Master 1
+  master-node2: OpenShift Master 2
+  worker-node1: OpenShift Worker 1
+  worker-node2: OpenShift Worker 2
+
+aws_ansible_user: ec2-user
+aws_private_key_path: /path/to/private_key.pem
+
+
+6. Create a vars file named `openshift_vars.yml` with the following content:
+
+
+openshift_username: admin
+openshift_password: password
+openshift_host: https://openshift-cluster.example.com
+mysql_root_password: mysecretpassword
+
+
+Now, you can run the playbook using the following command:
+
+
+ansible-playbook -i hosts launch_ec2_instances.yml
+
+
+This playbook will launch EC2 instances on AWS, configure the OpenShift master and worker nodes, and deploy WordPress and MySQL pods with services on the OpenShift cluster.
