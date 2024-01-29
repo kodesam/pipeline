@@ -1,0 +1,32 @@
+Sure! Here's an example of an Ansible script using the `cloud_stack` module to manage Grafana Cloud stack and create a stack:
+
+
+- name: Manage Grafana Cloud Stack
+  hosts: localhost
+  gather_facts: False
+
+  vars:
+    api_url: "https://api.grafana.com/api"
+    api_token: "your_api_token"
+
+  tasks:
+    - name: Create Stack
+      cloud_stack:
+        url: "{{ api_url }}"
+        token: "{{ api_token }}"
+        state: present
+        stack_name: "my-stack"
+        stack_template: "/path/to/stack/template.yaml"
+
+
+Make sure to replace `"your_api_token"` with your actual Grafana API token. Also, update the `stack_name` with your desired stack name and `stack_template` with the path to your stack template file.
+
+This script will create a stack in the Grafana Cloud using the specified stack template.
+
+You can run the script using the `ansible-playbook` command:
+
+
+ansible-playbook -i inventory.ini create_stack.yml
+
+
+Remember to replace `inventory.ini` with the inventory file containing your host information, and `create_stack.yml` with the filename of the Ansible script.
