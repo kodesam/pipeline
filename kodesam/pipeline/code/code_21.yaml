@@ -1,0 +1,24 @@
+Sure! Here is an example ansible script using the `shell` module to execute the commands and fetch the output:
+
+
+- hosts: all
+  tasks:
+    - name: Verify password hashing algorithm
+      shell: "grep -E '^\s*password\s+sufficient\s+pam_unix.so\s+.*sha512\s*.*$' /etc/pam.d/password-auth /etc/pam.d/system-auth"
+      register: output
+      changed_when: false
+
+    - name: Print output
+      debug:
+        var: output.stdout_lines
+
+
+This playbook will run the `grep` command on the remote hosts and save the output in the `output` variable. The second task will print the output for verification.
+
+You can save this code in a YAML file, e.g., `verify_password_algorithm.yaml`, and then run the playbook using the following command:
+
+
+ansible-playbook -i inventory_file verify_password_algorithm.yaml
+
+
+Make sure to replace `inventory_file` with the path to your inventory file containing the hosts you want to execute this playbook on.
