@@ -1,0 +1,92 @@
+Sure! Here's an example of an Ansible script that uses the `aws_az_info` module to gather information about availability zones in AWS, and then launches EC2 instances for the master and slave nodes. It also configures the master and slave nodes separately using roles, and deploys a WordPress and MySQL database connected to it on the respective slaves.
+
+
+---
+- name: Launch EC2 instances for master and slave nodes
+  hosts: localhost
+  gather_facts: false
+  vars:
+    aws_access_key: 'YOUR_AWS_ACCESS_KEY'
+    aws_secret_key: 'YOUR_AWS_SECRET_KEY'
+    region: 'YOUR_AWS_REGION'
+    security_group: 'YOUR_SECURITY_GROUP'
+    key_pair: 'YOUR_KEY_PAIR'
+    master_instance_type: 't2.micro'
+    slave_instance_type: 't2.micro'
+    master_volume_size: 10
+    slave_volume_size: 10
+
+  tasks:
+    - name: Gather availability zone facts
+      aws_az_info:
+        region: "{{ region }}"
+      register: az_info
+
+    - name: Launch master node EC2 instance
+      ec2:
+        profile: "{{ aws_access_key }}"
+        secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        image: "{{ image }}"
+        instance_type: "{{ master_instance_type }}"
+        key_name: "{{ key_pair }}"
+        security_groups: "{{ security_group }}"
+        count: 1
+        network:
+          assign_public_ip: yes
+        volumes:
+          - device_name: "/dev/xvda"
+            volume_size: "{{ master_volume_size }}"
+            volume_type: gp2
+        tags:
+          Name: master-node
+        wait: yes
+      register: master_instance
+
+    - name: Launch slave node EC2 instance
+      ec2:
+        profile: "{{ aws_access_key }}"
+        secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        image: "{{ image }}"
+        instance_type: "{{ slave_instance_type }}"
+        key_name: "{{ key_pair }}"
+        security_groups: "{{ security_group }}"
+        count: 1
+        network:
+          assign_public_ip: yes
+        volumes:
+          - device_name: "/dev/xvda"
+            volume_size: "{{ slave_volume_size }}"
+            volume_type: gp2
+        tags:
+          Name: slave-node
+        wait: yes
+      register: slave_instance
+
+    - name: Configure master node
+      hosts: master-node
+      roles:
+        - configure-master
+
+    - name: Configure slave node
+      hosts: slave-node
+      roles:
+        - configure-slave
+
+    - name: Deploy WordPress and MySQL on slave node
+      hosts: slave-node
+      roles:
+        - deploy-wordpress
+        - deploy-mysql
+
+...
+
+# Define roles for configuring master and slave nodes, and deploying WordPress and MySQL
+
+
+Make sure to replace the placeholder values with your own AWS access key, secret key, region, security group, key pair, and other desired configuration settings.
+
+Additionally, you'll need to define the roles for configuring the master and slave nodes, and deploying WordPress and MySQL. These roles can contain the necessary tasks and configurations specific to each component.
+
+Keep in mind that this is just a basic example, and you may need to adapt and customize it according to your specific requirements.
