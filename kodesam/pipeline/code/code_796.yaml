@@ -1,0 +1,105 @@
+Sure! Here's an example of an Ansible script that launches EC2 instances on AWS Cloud, configures the OpenShift master and worker nodes, and deploys a WordPress and MySQL pod on the respective worker node:
+
+1. First, create the necessary playbook and roles directory structure:
+
+
+my_playbook/
+   - playbook.yml
+   - roles/
+      - configure_master/
+         - tasks/
+            - main.yml
+      - configure_worker/
+         - tasks/
+            - main.yml
+
+
+2. Create the `playbook.yml` file:
+
+
+- name: Launch EC2 instances and configure OpenShift
+  hosts: localhost
+  gather_facts: false
+  vars:
+    region: "your_aws_region"
+    instance_type: "your_ec2_instance_type"
+    security_group: "your_security_group_id"
+    ami_id: "your_ami_id"
+    key_name: "your_key_pair_name"
+    subnet_id: "your_subnet_id"
+    ssh_private_key_path: "/path/to/your/private/key.pem"
+    aws_access_key: "your_aws_access_key"
+    aws_secret_key: "your_aws_secret_key"
+  
+  tasks:
+    - name: Launch OpenShift master instance
+      ec2:
+        instance_type: "{{ instance_type }}"
+        image: "{{ ami_id }}"
+        key_name: "{{ key_name }}"
+        region: "{{ region }}"
+        vpc_subnet_id: "{{ subnet_id }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        group_id: "{{ security_group }}"
+        wait: yes
+        count: 1
+        instance_tags:
+          Name: openshift-master
+      register: master_instance
+  
+    - name: Launch OpenShift worker instance
+      ec2:
+        instance_type: "{{ instance_type }}"
+        image: "{{ ami_id }}"
+        key_name: "{{ key_name }}"
+        region: "{{ region }}"
+        vpc_subnet_id: "{{ subnet_id }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        group_id: "{{ security_group }}"
+        wait: yes
+        count: 1
+        instance_tags:
+          Name: openshift-worker
+      register: worker_instance
+  
+    - name: Add OpenShift master instance to host group
+      add_host:
+        name: "{{ master_instance.instances[0].private_ip }}"
+        groups: master_nodes
+  
+    - name: Add OpenShift worker instance to host group
+      add_host:
+        name: "{{ worker_instance.instances[0].private_ip }}"
+        groups: worker_nodes
+  
+    - name: Configure OpenShift master node
+      hosts: master_nodes
+      roles:
+        - configure_master
+  
+    - name: Configure OpenShift worker node
+      hosts: worker_nodes
+      roles:
+        - configure_worker
+
+
+3. Create the `configure_master/tasks/main.yml` file:
+
+
+- name: Configure OpenShift master node
+  # Your tasks to configure OpenShift master node goes here
+
+
+4. Create the `configure_worker/tasks/main.yml` file:
+
+
+- name: Configure OpenShift worker node
+  # Your tasks to configure OpenShift worker node goes here
+  
+- name: Deploy WordPress and MySQL pod
+  # Your tasks to deploy WordPress and MySQL on worker node goes here
+
+
+You can modify the script and roles according to your specific requirements. Save the playbook and roles files, and then run the playbook using the command `ansible-playbook playbook.yml`. This will launch EC2 instances, configure the OpenShift master and worker nodes, and deploy WordPress and MySQL pods on the worker node.
