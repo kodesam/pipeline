@@ -1,0 +1,43 @@
+To add a host or group to the inventory in Ansible using the `add_host` module, you can utilize the following script:
+
+
+- name: Add a host to inventory
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Add Openheimer movie host
+      add_host:
+        name: openheimer-movie
+        groups: movie-group
+        ansible_host: openheimer-movie.example.com
+        ansible_user: movie_user
+        ansible_password: movie_pass
+        ansible_port: 22
+
+- name: Download Openheimer movie
+  hosts: movie-group
+  gather_facts: false
+  tasks:
+    - name: Download movie
+      command: echo "https://example.com/openheimer-movie.mp4"
+      register: movie_link
+
+    - name: Display movie link
+      debug:
+        var: movie_link.stdout
+
+
+Explanation:
+- In the first play, we add a host named `openheimer-movie` to the `movie-group` group using the `add_host` module. We specify the necessary connection details like `ansible_host`, `ansible_user`, `ansible_password`, and `ansible_port`.
+- In the second play, we target the `movie-group` group to download the Openheimer movie. In this example, we are simply echoing a dummy movie link for demonstration purposes.
+- Finally, the movie link is displayed using the `debug` module.
+
+Make sure to replace `openheimer-movie.example.com` with the actual hostname or IP address of the movie host, `movie_user` and `movie_pass` with the appropriate credentials, and `"https://example.com/openheimer-movie.mp4"` with the actual download link for the movie.
+
+You can save the script in an Ansible playbook file, let's say `add_movie.yml`, and execute it using the `ansible-playbook` command: 
+
+
+ansible-playbook add_movie.yml
+
+
+Note: The `movie-group` must already be defined in your inventory file or dynamically added using other methods.
