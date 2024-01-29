@@ -1,1 +1,1 @@
-## Pipeline of code deployment from Bluerun Book AI ##
+## Pipeline of code deployment from Script AI ##
