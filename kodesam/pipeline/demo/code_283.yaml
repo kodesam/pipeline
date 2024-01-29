@@ -1,0 +1,28 @@
+Here is an example of a jinja2 template for an Ansible playbook that uses the `curl` command to fetch data from the Yahoo website:
+
+```yaml
+---
+- name: Fetch data from Yahoo
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Fetch data using curl
+      command: curl https://www.yahoo.com
+      register: curl_output
+
+    - name: Display curl output
+      debug:
+        var: curl_output.stdout_lines
+```
+
+You can save this template in a file with a `.yaml` or `.yml` extension, and then use Ansible to execute it. Make sure you have Ansible installed on your system before running the playbook.
+
+To execute the playbook, run the following command:
+
+```
+ansible-playbook playbook.yaml
+```
+
+Replace `playbook.yaml` with the actual name of your playbook file.
+
+This playbook will run the `curl` command to fetch the Yahoo homepage and store the output in the `curl_output` variable. The playbook then displays the output using the `debug` module. You can modify the playbook as needed to suit your requirements.
