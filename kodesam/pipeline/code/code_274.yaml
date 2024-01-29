@@ -1,0 +1,33 @@
+Here is an example of an Ansible playbook that uses the `shell` module to run the commands and verify the password complexity:
+
+
+---
+- name: Verify password complexity
+  hosts: all
+  tasks:
+    - name: Check minlen value
+      shell: grep ^minlen /etc/security/pwquality.conf
+      register: minlen_output
+      changed_when: false
+
+    - name: Check credit values
+      shell: grep -E "^\s*\Scredit\s*=" /etc/security/pwquality.conf
+      register: credit_output
+      changed_when: false
+
+    - name: Print minlen output
+      debug:
+        var: minlen_output.stdout_lines
+
+    - name: Print credit output
+      debug:
+        var: credit_output.stdout_lines
+
+
+You can save this script in a file, for example `password_complexity.yml`, and run it with the `ansible-playbook` command:
+
+
+ansible-playbook -i inventory_file password_complexity.yml
+
+
+Make sure to replace `inventory_file` with the path to your Ansible inventory file containing the hosts on which you want to run the commands.
