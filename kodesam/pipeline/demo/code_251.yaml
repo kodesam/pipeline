@@ -1,0 +1,177 @@
+Sure! Here's an example Ansible script that uses the EC2 module to launch instances on AWS Cloud for an OpenShift cluster. It also includes roles to configure the master and worker nodes separately, and create a WordPress pod, MySQL pod, and services to connect them.
+
+
+---
+- name: Launch EC2 instances and configure OpenShift cluster
+  hosts: localhost
+  gather_facts: False
+
+  vars:
+    region: "your-aws-region"
+    instance_type: "your-ec2-instance-type"
+    key_pair: "your-ssh-key-pair"
+    security_group: "your-security-group"
+    subnet_id: "your-subnet-id"
+    iam_profile: "your-iam-instance-profile"
+    image_id: "your-ami-id"
+    openshift_version: "your-openshift-version"
+    openshift_master_hostname: "your-master-hostname"
+    openshift_worker_hostname: "your-worker-hostname"
+
+  tasks:
+    - name: Launch OpenShift Master Node
+      ec2:
+        count: 1
+        region: "{{ region }}"
+        instance_type: "{{ instance_type }}"
+        key_name: "{{ key_pair }}"
+        group: "{{ security_group }}"
+        vpc_subnet_id: "{{ subnet_id }}"
+        assign_public_ip: true
+        instance_profile_name: "{{ iam_profile }}"
+        image_id: "{{ image_id }}"
+        user_data: |
+          #!/bin/bash
+          echo "openshift_node_group_name='node-config-master'"
+          echo "openshift_public_hostname='{{ openshift_master_hostname }}'"
+          echo "docker_tag='{{ openshift_version }}')"
+          echo "openshift_install_examples_registries='true'"
+          echo "openshift_release=latest"
+        wait: true
+      register: master_node
+
+    - name: Launch OpenShift Worker Node
+      ec2:
+        count: 2
+        region: "{{ region }}"
+        instance_type: "{{ instance_type }}"
+        key_name: "{{ key_pair }}"
+        group: "{{ security_group }}"
+        vpc_subnet_id: "{{ subnet_id }}"
+        assign_public_ip: true
+        instance_profile_name: "{{ iam_profile }}"
+        image_id: "{{ image_id }}"
+        user_data: |
+          #!/bin/bash
+          echo "openshift_node_group_name='node-config-compute'"
+          echo "openshift_public_hostname='{{ openshift_worker_hostname }}'"
+          echo "docker_tag='{{ openshift_version }}')"
+          echo "openshift_node_labels='{'region': 'primary', 'zone': 'east'}'"
+          echo "openshift_install_examples_registries='true'"
+          echo "openshift_release=latest"
+        wait: true
+      register: worker_nodes
+
+    - name: Wait for SSH to be available on Master Node
+      wait_for:
+        host: "{{ master_node.instances[0].public_ip }}"
+        port: 22
+        delay: 10
+        timeout: 300
+
+    - name: Wait for SSH to be available on Worker Nodes
+      wait_for:
+        host: "{{ item.public_ip }}"
+        port: 22
+        delay: 10
+        timeout: 300
+      loop: "{{ worker_nodes.instances }}"
+
+    - name: Configure OpenShift Master Node
+      include_role:
+        name: openshift_master_config
+      vars:
+        master_node_ip: "{{ master_node.instances[0].public_ip }}"
+
+    - name: Configure OpenShift Worker Nodes
+      include_role:
+        name: openshift_worker_config
+      vars:
+        worker_node_ips: "{{ worker_nodes | json_query('instances[*].public_ip') }}"
+
+- name: Deploy WordPress Pod and MySQL Pod
+  hosts: localhost
+  gather_facts: False
+
+  tasks:
+    - name: Create WordPress Pod
+      k8s:
+        kubeconfig: "/path/to/kubeconfig"
+        name: wordpress
+        namespace: default
+        definition:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: wordpress
+          spec:
+            containers:
+              - name: wordpress
+                image: wordpress
+                ports:
+                  - containerPort: 80
+
+    - name: Create MySQL Pod
+      k8s:
+        kubeconfig: "/path/to/kubeconfig"
+        name: mysql
+        namespace: default
+        definition:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: mysql
+          spec:
+            containers:
+              - name: mysql
+                image: mysql
+                ports:
+                  - containerPort: 3306
+
+- name: Create Services for WordPress and MySQL Pods
+  hosts: localhost
+  gather_facts: False
+
+  tasks:
+    - name: Create Service for WordPress
+      k8s:
+        kubeconfig: "/path/to/kubeconfig"
+        name: wordpress
+        namespace: default
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: wordpress
+          spec:
+            selector:
+              app: wordpress
+            ports:
+              - protocol: TCP
+                port: 80
+                targetPort: 80
+
+    - name: Create Service for MySQL
+      k8s:
+        kubeconfig: "/path/to/kubeconfig"
+        name: mysql
+        namespace: default
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: mysql
+          spec:
+            selector:
+              app: mysql
+            ports:
+              - protocol: TCP
+                port: 3306
+                targetPort: 3306
+
+
+Please replace the placeholders `your-aws-region`, `your-ec2-instance-type`, `your-ssh-key-pair`, `your-security-group`, `your-subnet-id`, `your-iam-instance-profile`, `your-ami-id`, `your-openshift-version`, `your-master-hostname`, and `your-worker-hostname` with your actual values.
+
+Also, make sure to replace the `/path/to/kubeconfig` with the path to your Kubernetes configuration file.
+
+Note that you may need to modify this script based on your specific requirements and configurations.
