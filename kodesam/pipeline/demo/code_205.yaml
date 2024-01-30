@@ -1,0 +1,34 @@
+To send repeated cURL requests using Ansible, you can create an Ansible playbook with a Jinja2 template. Here's an example:
+
+1. Create a playbook file, e.g., `curl.yml`:
+
+```yaml
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Execute cURL command
+      shell: "{{ curl_command }}"
+      register: curl_output
+      with_sequence: start=1 end=10
+      loop_control:
+        loop_var: iteration
+
+    - name: Display cURL output
+      debug:
+        msg: "cURL Output for iteration {{ iteration }}: {{ curl_output.stdout }}"
+```
+2. Create a Jinja2 template file, e.g., `curl_template.j2`:
+
+```bash
+curl yahoo.com
+```
+3. Run the playbook:
+
+```shell
+ansible-playbook -e "curl_command='$(cat curl_template.j2)'" curl.yml
+```
+
+This playbook will execute the cURL command using the `curl_template.j2` template for a total of 10 iterations. The output of each cURL request will be displayed in the console.
+
+Note: Make sure you have Ansible installed and the connection information is set up correctly in the inventory file. Adjust the playbook and template file paths according to your setup.
