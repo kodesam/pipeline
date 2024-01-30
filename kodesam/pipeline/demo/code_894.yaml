@@ -1,0 +1,30 @@
+Certainly! Here's an example of a shell script that uses curl to send a request to a specific IP address 10 times in a month and outputs the results to a file named `ping_output` in the `tmp` folder.
+
+```bash
+#!/bin/bash
+
+# Set the IP address to ping
+IP_ADDRESS="XXX.XXX.XXX.XXX"
+
+# Create the tmp folder if it doesn't exist
+mkdir -p /tmp
+
+# Get the current month
+MONTH=$(date +%m)
+
+# Loop 10 times
+for i in {1..10}; do
+  # Get the current timestamp for the output file
+  TIMESTAMP=$(date +"%Y-%m-%d_%H:%M:%S")
+
+  # Send the request using curl
+  curl -o /dev/null -s -w "${TIMESTAMP}: %{http_code}\n" "$IP_ADDRESS" >> /tmp/ping_output
+
+  # Sleep for 2 seconds before the next request
+  sleep 2
+done
+```
+
+To use this script, replace `XXX.XXX.XXX.XXX` with the actual IP address you want to ping. The script will create the `tmp` folder (if it doesn't exist), then loop 10 times, sending a request to the specified IP address using curl. Each response will be logged in the format `timestamp: http_code` in the `ping_output` file located in the `/tmp` folder.
+
+You can run this script by saving it to a file (e.g., `ping_script.sh`), making it executable (`chmod +x ping_script.sh`), and running it using `./ping_script.sh`. The output will be stored in the `/tmp/ping_output` file.
