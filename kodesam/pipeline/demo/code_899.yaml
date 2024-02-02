@@ -1,0 +1,22 @@
+#!/bin/bash
+
+IP_ADDRESS="XXX.XXX.XXX.XXX"
+OUTPUT_FOLDER="/tmp"
+FILE_NAME="ping_output"
+
+# Calculate the number of days in the current month
+CURRENT_MONTH=$(date +%m)
+CURRENT_YEAR=$(date +%Y)
+DAY_IN_MONTH=$(cal $CURRENT_MONTH $CURRENT_YEAR | awk 'NF {DAYS = $NF}; END{print DAYS}')
+
+# Loop through each day of the month and execute curl command
+for ((day=1; day<=$DAY_IN_MONTH; day++))
+do
+  date_string=$(printf "%02d" $day)-$CURRENT_MONTH-$CURRENT_YEAR
+  file_path="$OUTPUT_FOLDER/$FILE_NAME-$date_string.txt"
+  
+  for ((i=1; i<=10; i++))
+  do
+    curl "$IP_ADDRESS" >> $file_path
+  done
+done
