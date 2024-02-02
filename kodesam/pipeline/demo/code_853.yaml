@@ -1,0 +1,242 @@
+Sure, here is an example of a Kubernetes yaml file that creates an ELK (Elasticsearch, Logstash, Kibana) cluster deployment with the necessary resources:
+
+1. Create a file called `elk-cluster.yaml` and paste the following content:
+
+```yaml
+---
+# Create the namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: elk-cluster
+---
+# Create the ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: elk-cluster-role
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: ["extensions"]
+  resources: ["deployments"]
+  verbs: ["get", "watch", "list"]
+  ...
+# Add any additional rules as required
+
+---
+# Create the RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: elk-cluster-binding
+  namespace: elk-cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: elk-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: elk-cluster
+  namespace: elk-cluster
+
+---
+# Create the Elasticsearch Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+  namespace: elk-cluster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "0.5"
+            memory: "512Mi"
+        env:
+        - name: discovery.type
+          value: single-node
+        ports:
+        - containerPort: 9200
+
+---
+# Create the Logstash Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: elk-cluster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+      - name: logstash
+        image: docker.elastic.co/logstash/logstash:7.7.0
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/share/logstash/config/logstash.conf
+          subPath: logstash.conf
+      volumes:
+      - name: config-volume
+        configMap:
+          name: logstash-config
+
+---
+# Create the Kibana Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: elk-cluster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:7.7.0
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "512Mi"
+          requests:
+            cpu: "0.25"
+            memory: "256Mi"
+        ports:
+        - containerPort: 5601
+
+---
+# Create the Elasticsearch secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: elasticsearch-secrets
+  namespace: elk-cluster
+data:
+  username: <base64-encoded-username>
+  password: <base64-encoded-password>
+
+---
+# Create the Logstash configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: elk-cluster
+data:
+  logstash.conf: |
+    input {
+      tcp {
+        port => 5000
+        codec => json_lines
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch:9200"]
+        index => "logs-%{+YYYY.MM.dd}"
+      }
+    }
+
+---
+# Create the service for Elasticsearch
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: elk-cluster
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+    - protocol: TCP
+      port: 9200
+      targetPort: 9200
+
+---
+# Create the service for Logstash
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash
+  namespace: elk-cluster
+spec:
+  selector:
+    app: logstash
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+
+---
+# Create the service for Kibana
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: elk-cluster
+spec:
+  selector:
+    app: kibana
+  ports:
+    - protocol: TCP
+      port: 5601
+      targetPort: 5601
+
+---
+# Create the route for accessing Kibana from external
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: kibana-route
+  namespace: elk-cluster
+spec:
+  host: kibana-route-example.com
+  to:
+    kind: Service
+    name: kibana
+  port:
+    targetPort: 5601
+```
+
+Make sure to replace `<base64-encoded-username>` and `<base64-encoded-password>` in the `elasticsearch-secrets` section with your actual Elasticsearch credentials, base64 encoded.
+
+2. Save the file and apply the configuration using the following command:
+
+```bash
+kubectl apply -f elk-cluster.yaml
+```
+
+This will create the ELK cluster deployment along with the required resources (namespace, ClusterRole, RoleBinding, Deployment, Secrets, ConfigMap, Services, Route) in the Kubernetes cluster.
+
+Please note that this is a basic example and may need to be customized according to your specific requirements and environment.
