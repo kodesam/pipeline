@@ -1,0 +1,129 @@
+Sure! Here's an example of an Ansible playbook that uses the `add_host` module to create an ELK cluster deployment:
+
+
+---
+- name: Create ELK cluster deployment
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Add ELK cluster node to inventory
+      add_host:
+        name: elk_cluster_node
+        groups: elk_cluster_nodes
+
+    - name: Add ELK cluster nodes to clusterrole, rolebinding, namespace, deployment, configmap, service, and route
+      hosts: elk_cluster_nodes
+      tasks:
+        - name: Configure clusterrole
+          k8s:
+            kind: ClusterRole
+            name: elk_cluster_role
+            rules:
+              - apiGroups: [""]
+                resources: ["pods"]
+                verbs: ["get", "list"]
+
+        - name: Configure rolebinding
+          k8s:
+            kind: RoleBinding
+            name: elk_cluster_rolebinding
+            namespace: default
+            roleRef:
+              apiGroup: rbac.authorization.k8s.io
+              kind: ClusterRole
+              name: elk_cluster_role
+            subjects:
+              - kind: ServiceAccount
+                name: default
+                
+        - name: Create namespace
+          k8s:
+            kind: Namespace
+            name: elk_namespace
+
+        - name: Create deployment
+          k8s:
+            kind: Deployment
+            name: elk_deployment
+            namespace: elk_namespace
+            spec:
+              replicas: 1
+              selector:
+                matchLabels:
+                  app: elk
+              template:
+                metadata:
+                  labels:
+                    app: elk
+                spec:
+                  containers:
+                    - name: elasticsearch
+                      image: elasticsearch:7.14.0
+                      ports:
+                        - containerPort: 9200
+                          name: http
+                      volumeMounts:
+                        - name: elasticsearch-data
+                          mountPath: /usr/share/elasticsearch/data
+                  volumes:
+                    - name: elasticsearch-data
+                      emptyDir: {}
+
+        - name: Create configmap
+          k8s:
+            kind: ConfigMap
+            name: elk_configmap
+            namespace: elk_namespace
+            data:
+              logstash.conf: |
+                input {
+                  beats {
+                    port => 5044
+                  }
+                }
+                output {
+                  elasticsearch {
+                    hosts => ["elasticsearch:9200"]
+                    index => "logstash-%{+YYYY.MM.dd}"
+                  }
+                }
+
+        - name: Create service
+          k8s:
+            kind: Service
+            name: elk_service
+            namespace: elk_namespace
+            spec:
+              selector:
+                app: elk
+              ports:
+                - protocol: TCP
+                  port: 9200
+                  targetPort: 9200
+
+        - name: Create route
+          k8s:
+            kind: Route
+            name: elk_route
+            namespace: elk_namespace
+            spec:
+              host: elk.example.com
+              to:
+                kind: Service
+                name: elk_service
+
+
+
+This playbook performs the following tasks:
+
+1. Adds the `elk_cluster_node` host to the `elk_cluster_nodes` group using the `add_host` module.
+2. Configures the clusterrole and rolebinding for the ELK cluster nodes using the `k8s` module.
+3. Creates a namespace named `elk_namespace` using the `k8s` module.
+4. Deploys the ELK stack using a Deployment named `elk_deployment` within the `elk_namespace`.
+5. Creates a ConfigMap named `elk_configmap` within the `elk_namespace`, containing the Logstash configuration.
+6. Creates a Service named `elk_service` within the `elk_namespace`, exposing port 9200.
+7. Creates a Route named `elk_route` within the `elk_namespace`, mapping the hostname `elk.example.com` to the `elk_service`.
+
+Please note that you may need to modify the values and configurations in this playbook to suit your specific environment and requirements.
