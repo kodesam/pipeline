@@ -1,0 +1,24 @@
+To send a cURL request to Yahoo! 10 times using a Bash script, you can use a `for` loop in the script. Here's an example:
+
+```bash
+#!/bin/bash
+
+for i in {1..10}; do
+  echo "Sending request $i"
+  curl https://www.yahoo.com
+done
+```
+
+Save the script to a file, e.g., `yahoo_curl.sh`. Then, make the script executable by running the following command in the terminal:
+
+```bash
+chmod +x yahoo_curl.sh
+```
+
+To execute the script and send the cURL request to Yahoo! 10 times, use the following command:
+
+```bash
+./yahoo_curl.sh
+```
+
+This will send the cURL request and display the output for each request in the terminal. Adjust the script or cURL parameters as needed for your specific use case.
