@@ -1,0 +1,119 @@
+Sure, here is an example of an Ansible Playbook yaml file that you can use to deploy an ELK (Elasticsearch, Logstash, Kibana) cluster with the necessary resources:
+
+```yaml
+---
+- name: Deploy ELK Cluster
+  hosts: localhost
+  tasks:
+    - name: Create Namespace
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: elk-namespace
+
+    - name: Create ClusterRole
+      k8s:
+        state: present
+        definition:
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRole
+          metadata:
+            name: elk-clusterrole
+
+    - name: Create RoleBinding
+      k8s:
+        state: present
+        definition:
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: RoleBinding
+          metadata:
+            name: elk-rolebinding
+            namespace: elk-namespace
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: elk-clusterrole
+          subjects:
+            - kind: ServiceAccount
+              name: default
+              namespace: elk-namespace
+
+    - name: Create ConfigMap
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: elk-configmap
+            namespace: elk-namespace
+          data:
+            elk-config: |
+              # Your ELK configuration here
+
+    - name: Create Deployment
+      k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: elk-deployment
+            namespace: elk-namespace
+          spec:
+            replicas: 3
+            selector:
+              matchLabels:
+                app: elk
+            template:
+              metadata:
+                labels:
+                  app: elk
+              spec:
+                containers:
+                  - name: elasticsearch
+                    image: elasticsearch
+                  - name: logstash
+                    image: logstash
+                  - name: kibana
+                    image: kibana
+
+    - name: Create Service
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: elk-service
+            namespace: elk-namespace
+          spec:
+            selector:
+              app: elk
+            ports:
+              - protocol: TCP
+                targetPort: 9200
+                port: 9200
+
+    - name: Create Route
+      k8s:
+        state: present
+        definition:
+          apiVersion: route.openshift.io/v1
+          kind: Route
+          metadata:
+            name: elk-route
+            namespace: elk-namespace
+          spec:
+            to:
+              kind: Service
+              name: elk-service
+            port:
+              targetPort: 9200
+
+```
+
+You can save this code into a file with a `.yaml` extension and run it using Ansible to deploy the ELK cluster with all the specified resources.
