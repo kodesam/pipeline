@@ -1,0 +1,26 @@
+Sure, you can create a shell script to curl a specific IP address 10 times in a month and save the output to a temporary folder with the file name `ping_output`. Here's an example shell script that you can use:
+
+```bash
+#!/bin/bash
+
+# Set the IP address
+IP_ADDRESS="XXX.XXX.XXX.XXX"
+
+# Get the current month
+MONTH=$(date '+%Y-%m')
+
+# Create the output directory if it doesn't exist
+OUTPUT_DIR="/tmp/$MONTH"
+mkdir -p $OUTPUT_DIR
+
+# Loop 10 times and curl the IP address
+for ((i=1; i<=10; i++))
+do
+    OUTPUT_FILE="$OUTPUT_DIR/ping_output_$i.txt"
+    curl -s $IP_ADDRESS > $OUTPUT_FILE
+    echo "Curl $IP_ADDRESS - Attempt $i - Output saved to $OUTPUT_FILE"
+    sleep 5  # Wait for 5 seconds between each request
+done
+```
+
+Save the above code as a shell script file, for example `curl_ip.sh`, and execute it. This script will curl the specified IP address 10 times, saving the output of each request to a separate file in a temporary folder with the file name `ping_output_1.txt`, `ping_output_2.txt`, etc. The output files will be stored under `/tmp` folder based on the current month.
