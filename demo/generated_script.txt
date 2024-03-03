@@ -1,0 +1,22 @@
+You can create an Nginx pod in Kubernetes by defining a Pod manifest file and applying it using `kubectl` command. Here is an example of a simple Nginx Pod manifest file:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+```
+
+Save the above content in a file named `nginx-pod.yaml` and apply it using the following command:
+
+```bash
+kubectl apply -f nginx-pod.yaml
+```
+
+This will create an Nginx Pod with the name `nginx-pod` running the latest Nginx image on port 80.
