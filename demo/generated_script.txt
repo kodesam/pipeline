@@ -1,12 +1,22 @@
-Sure, here is a simple shell script that will use curl to send a request to `192.168.10.10` 10 times:
+To create an Nginx pod in Kubernetes, you can use the following YAML manifest:
 
-```bash
-#!/bin/bash
-
-for i in {1..10}
-do
-  curl -sS "http://192.168.10.10"
-done
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx:latest
+    ports:
+    - containerPort: 80
 ```
 
-Save this script in a file (e.g., `curl_script.sh`), make it executable using `chmod +x curl_script.sh`, and then run it using `./curl_script.sh`. This will send a request to `192.168.10.10` 10 times.
+You can save this YAML manifest to a file (e.g., nginx-pod.yaml) and then create the pod using the following command:
+
+```bash
+kubectl apply -f nginx-pod.yaml
+```
+
+This will create a pod named "nginx-pod" running an Nginx container using the latest Nginx image. The container is configured to listen on port 80.
