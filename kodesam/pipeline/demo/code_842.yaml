@@ -1,0 +1,21 @@
+Sure, here is how you can store the Elasticsearch pod name in an environment variable using an Ansible playbook:
+
+```yaml
+---
+- name: Set Elasticsearch Pod Name to Environment Variable
+  hosts: localhost
+  tasks:
+    - name: Retrieve Elasticsearch pod name
+      command: kubectl get pods -n openshift-logging -l component=elasticsearch -o jsonpath='{.items[0].metadata.name}'
+      register: pod_name
+
+    - name: Set the Elasticsearch pod name as an environment variable
+      set_fact:
+        es_pod_name: "{{ pod_name.stdout }}"
+
+    - name: Set the Elasticsearch pod name as an environment variable for the current shell
+      shell: |
+        export ES_POD_NAME={{ es_pod_name }}
+```
+
+You can save this playbook as a YAML file and run it using the `ansible-playbook` command. This playbook will retrieve the name of the Elasticsearch pod that has the label component=elasticsearch and store it in the `ES_POD_NAME` environment variable.
