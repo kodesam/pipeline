@@ -1,0 +1,52 @@
+I have combined all Ansible tasks into a single playbook for your operations involving the Elasticsearch pod in the `openshift-logging` namespace. You can save this as a YAML file (let's say `elasticsearch_operations.yaml`) and then run it using the `ansible-playbook` command:
+
+```yaml
+---
+- name: Operations on Elasticsearch Pod
+  hosts: localhost
+  tasks:
+    - name: Get Pods with label component=elasticsearch in openshift-logging namespace
+      command: kubectl get pods -n openshift-logging -l component=elasticsearch
+
+    - name: Set Elasticsearch Pod Name to Environment Variable
+      command: kubectl get pods -n openshift-logging -l component=elasticsearch -o jsonpath='{.items[0].metadata.name}'
+      register: pod_name
+
+    - set_fact:
+        es_pod_name: "{{ pod_name.stdout }}"
+
+    - name: Set the Elasticsearch pod name as an environment variable for the current shell
+      shell: |
+        export ES_POD_NAME={{ es_pod_name }}
+
+    - name: Check Elasticsearch Pod Health
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- health
+
+    - name: Query Elasticsearch Nodes with es_util
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=_cat/nodes?v
+
+    - name: Get Elasticsearch Master Node Information
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=_cat/master?v
+
+    - name: Check Number of Pending Tasks in Elasticsearch Health
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- health
+      register: health_output
+
+    - name: Filter the output to retrieve the number of pending tasks
+      shell: |
+        echo "{{ health_output.stdout_lines }}" | grep number_of_pending_tasks
+
+    - name: Get Elasticsearch Indices Information
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=_cat/indices?v
+
+    - name: Delete Elasticsearch Index
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=<elasticsearch_red_index_name> -X DELETE
+```
+
+You can run this playbook using the following command:
+
+```bash
+ansible-playbook elasticsearch_operations.yaml
+```
+
+Make sure you have the necessary permissions and configurations set up to run these commands in your Ansible environment.
