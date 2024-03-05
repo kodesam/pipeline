@@ -1,0 +1,12 @@
+Here is an example of an Ansible playbook that you can use to execute the `oc exec` command to delete an Elasticsearch index with a specific name using the `es_util` tool and the `ES_POD_NAME` environment variable:
+
+```yaml
+---
+- name: Delete Elasticsearch Index
+  hosts: localhost
+  tasks:
+    - name: Run the oc exec command to delete the Elasticsearch index
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=<elasticsearch_red_index_name> -X DELETE
+```
+
+You can save this playbook as a YAML file and execute it using the `ansible-playbook` command in your Ansible environment. This playbook will run the `oc exec` command with the `ES_POD_NAME` environment variable to delete the specified Elasticsearch index using the `es_util` tool in the `openshift-logging` namespace.
