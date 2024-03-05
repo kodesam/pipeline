@@ -1,0 +1,57 @@
+Here is the combined Ansible playbook that includes all the tasks for the Operations on the Elasticsearch Pod and the deletion of indices with a red health status:
+
+```yaml
+---
+- name: Operations on Elasticsearch Pod and Delete Indices with Red Health Status
+  hosts: localhost
+  tasks:
+    - name: Get Pods with label component=elasticsearch in openshift-logging namespace
+      command: kubectl get pods -n openshift-logging -l component=elasticsearch
+
+    - name: Set Elasticsearch Pod Name to Environment Variable
+      command: kubectl get pods -n openshift-logging -l component=elasticsearch -o jsonpath='{.items[0].metadata.name}'
+      register: pod_name
+
+    - set_fact:
+        es_pod_name: "{{ pod_name.stdout }}"
+
+    - name: Set the Elasticsearch pod name as an environment variable for the current shell
+      shell: |
+        export ES_POD_NAME={{ es_pod_name }}
+
+    - name: Check Elasticsearch Pod Health
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- health
+
+    - name: Query Elasticsearch Nodes with es_util
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=_cat/nodes?v
+
+    - name: Get Elasticsearch Master Node Information
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=_cat/master?v
+
+    - name: Check Number of Pending Tasks in Elasticsearch Health
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- health
+      register: health_output
+
+    - name: Filter the output to retrieve the number of pending tasks
+      shell: |
+        echo "{{ health_output.stdout_lines }}" | grep number_of_pending_tasks
+
+    - name: Delete Indices with Red Health Status
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=_cat/indices
+      register: indices
+
+    - set_fact:
+        red_indices: "{{ indices.stdout | from_yaml | selectattr('health', 'equalto', 'red') | list }}"
+
+    - debug:
+        var: red_indices
+
+    - name: Delete Elasticsearch indices with red health status
+      shell: |
+        for index in {{ red_indices | map(attribute='index') | join(' ') }};
+        do
+            oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=$index -X DELETE;
+        done
+```
+
+You can save this playbook as a YAML file and run it using the `ansible-playbook` command in your Ansible environment. This playbook will execute all the tasks for the Operations on the Elasticsearch Pod and then proceed to delete indices that have a red health status.
