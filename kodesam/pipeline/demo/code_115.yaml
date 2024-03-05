@@ -1,0 +1,14 @@
+I'm here to help you with ansible Playbook yaml file for your request. Here is an example of an Ansible playbook that you can use to list the pods in the "openshift-logging" namespace with the label "component=elasticsearch":
+
+```yaml
+---
+- name: Get Pods with label component=elasticsearch in openshift-logging namespace
+  hosts: localhost
+  tasks:
+    - name: Run the kubectl command to get the pods
+      command: kubectl get pods -n openshift-logging -l component=elasticsearch
+```
+
+You can execute this playbook with the "ansible-playbook" command in your Ansible environment. This playbook is designed to run the kubectl command to get the pods with the specified label in the specified namespace.
+
+Please note that you need to have the necessary permissions and configurations set up to execute kubectl commands within your Ansible environment.
