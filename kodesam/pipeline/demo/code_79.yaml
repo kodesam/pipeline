@@ -1,0 +1,9 @@
+It looks like you have combined multiple Ansible playbooks into a single playbook with separate tasks for each operation involving the Elasticsearch pod in the `openshift-logging` namespace. This structure can be useful to perform a sequence of actions related to the Elasticsearch pod.
+
+You can save the content you provided as a YAML file (let's say `elasticsearch_operations.yaml`) and then run it using the `ansible-playbook` command:
+
+```bash
+ansible-playbook elasticsearch_operations.yaml
+```
+
+This playbook will execute each task defined in the file sequentially. Make sure you have the necessary permissions and configurations set up to run these commands in your Ansible environment.
