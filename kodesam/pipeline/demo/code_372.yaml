@@ -1,0 +1,28 @@
+Here is an example of an Ansible playbook that will delete Elasticsearch indices with a "red" health status based on the input index parameter:
+
+```yaml
+---
+- name: Delete Indices with Red Health Status
+  hosts: localhost
+  tasks:
+    - name: Retrieve health status of Elasticsearch indices
+      command: oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=_cat/indices\?v
+      register: indices
+
+    - set_fact:
+        red_indices: "{{ indices.stdout | from_yaml | selectattr('health', 'equalto', 'red') | list }}"
+
+    - debug:
+        var: red_indices
+
+    - name: Delete Elasticsearch indices with red health status
+      shell: |
+        for index in {{ red_indices | map(attribute='index') | join(' ') }};
+        do
+            oc exec -n openshift-logging -c elasticsearch {{ lookup('env', 'ES_POD_NAME') }} -- es_util --query=$index -X DELETE;
+        done
+```
+
+This playbook will first retrieve the health status of all Elasticsearch indices, filter out the indices with a "red" health status, and then delete each of these indices one by one using the `oc exec` command with the `es_util` tool.
+
+You can run this playbook using the `ansible-playbook` command in your Ansible environment.
